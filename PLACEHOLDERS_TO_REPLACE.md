@@ -1,72 +1,3 @@
-# Placeholders to Replace Before Deployment
-
-Before deploying your String Art Generator, replace these placeholders with your actual values:
-
-## 🔴 Required Changes
-
-### 1. Google AdSense Publisher ID
-
-**File:** `index.html` (line ~31)
-
-```html
-<!-- FIND THIS: -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"
-
-<!-- REPLACE WITH: -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456"
-```
-
-**How to get:**
-1. Sign up at https://www.google.com/adsense
-2. Wait for approval (1-2 weeks)
-3. Copy your Publisher ID (format: `ca-pub-XXXXXXXXXXXXXXXX`)
-
----
-
-### 2. Google Analytics Measurement ID
-
-**File:** `index.html` (lines ~35 and ~40)
-
-```html
-<!-- FIND THIS (2 places): -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR_MEASUREMENT_ID"></script>
-...
-gtag('config', 'G-YOUR_MEASUREMENT_ID');
-
-<!-- REPLACE WITH: -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-...
-gtag('config', 'G-XXXXXXXXXX');
-```
-
-**How to get:**
-1. Go to https://analytics.google.com
-2. Create new property
-3. Copy Measurement ID (format: `G-XXXXXXXXXX`)
-
----
-
-### 3. Domain URLs
-
-**File:** `index.html` (multiple locations)
-
-```html
-<!-- FIND ALL INSTANCES OF: -->
-https://yourdomain.com/
-
-<!-- REPLACE WITH YOUR ACTUAL DOMAIN: -->
-https://stringartgenerator.com/
-```
-
-**Locations to replace:**
-- Line ~14: `<link rel="canonical" href="..."/>`
-- Line ~26: `<meta property="og:url" content="..."/>`
-- Line ~27: `<meta property="og:image" content=".../og-image.jpg"/>`
-- Line ~29: `<meta property="twitter:image" content=".../og-image.jpg"/>`
-- Line ~49: `"url": "..."`
-- Line ~50: `"image": ".../og-image.jpg"`
-
----
 
 ### 4. Ad Slot IDs
 
@@ -85,6 +16,7 @@ https://stringartgenerator.com/
 ```
 
 **How to get:**
+
 1. Log in to Google AdSense
 2. Go to **Ads** → **Ad units** → **New ad unit**
 3. Create 3 ad units:
@@ -108,6 +40,7 @@ https://stringartgenerator.com/
 - **Format:** JPG or PNG
 
 **Tools:**
+
 - Canva.com (free)
 - Photoshop
 - GIMP (free)
@@ -119,11 +52,13 @@ https://stringartgenerator.com/
 **File:** `public/sitemap.xml`
 
 Update the date:
+
 ```xml
 <lastmod>2025-10-06</lastmod>  <!-- Update to current date -->
 ```
 
 And domain:
+
 ```xml
 <loc>https://your-actual-domain.com/</loc>
 ```
@@ -135,6 +70,7 @@ And domain:
 **File:** `public/robots.txt`
 
 Update domain:
+
 ```txt
 Sitemap: https://your-actual-domain.com/sitemap.xml
 ```
@@ -158,37 +94,3 @@ Before deploying:
 ```
 
 ---
-
-## 🚀 After Replacing Placeholders
-
-1. **Build:**
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy:**
-   - Vercel: `vercel`
-   - Netlify: Push to GitHub, deploy via dashboard
-   - GitHub Pages: `npm run deploy`
-
-3. **Submit to Google:**
-   - Google Search Console: Submit sitemap
-   - Verify site ownership
-   - Wait 2-7 days for indexing
-
----
-
-## 📚 Full Documentation
-
-For complete deployment instructions, see:
-- `DEPLOYMENT_CHECKLIST.md` - Step-by-step deployment guide
-- `SEO_MONETIZATION_GUIDE.md` - Complete SEO and monetization guide
-- `README_EN.md` - Full project documentation
-
----
-
-## ❓ Need Help?
-
-**AdSense Help:** https://support.google.com/adsense
-**Analytics Help:** https://support.google.com/analytics
-**Deployment Issues:** See DEPLOYMENT_CHECKLIST.md troubleshooting section
