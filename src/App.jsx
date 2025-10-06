@@ -217,6 +217,21 @@ function App() {
       <AdBanner slot="5844513418" format="horizontal" />
 
       <FAQ />
+
+      {/* Footer */}
+      <footer className="app-footer">
+        <p>
+          © {new Date().getFullYear()} — Powered by{" "}
+          <a
+            href="https://cmdc.it"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-link"
+          >
+            cmdc
+          </a>
+        </p>
+      </footer>
     </div>
     </>
   )
