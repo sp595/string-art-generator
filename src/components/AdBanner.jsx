@@ -40,7 +40,7 @@ function AdBanner({ slot, format = 'horizontal', className = '' }) {
       <ins
         className="adsbygoogle"
         style={getAdStyle()}
-        data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+        data-ad-client="ca-pub-9577545050286720"
         data-ad-slot={slot}
         data-ad-format="auto"
         data-full-width-responsive="true"
