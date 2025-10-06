@@ -13,6 +13,11 @@ function ImageCropper({ image, onCropComplete, targetSize }) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [imageLoaded, setImageLoaded] = useState(false)
 
+  // Guard clause: return null if no image
+  if (!image) {
+    return null
+  }
+
   // Calculate initial scale to fit image
   useEffect(() => {
     if (!image) return
@@ -90,6 +95,38 @@ function ImageCropper({ image, onCropComplete, targetSize }) {
 
   }, [image, crop, targetSize, imageLoaded])
 
+  // Handle wheel event with passive: false to allow preventDefault
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const handleWheel = (e) => {
+      e.preventDefault()
+
+      const delta = e.deltaY > 0 ? 0.95 : 1.05
+      const newScale = Math.max(0.1, Math.min(5, crop.scale * delta))
+
+      // Zoom towards mouse position
+      const rect = canvas.getBoundingClientRect()
+      const mouseX = e.clientX - rect.left
+      const mouseY = e.clientY - rect.top
+
+      const scaleChange = newScale / crop.scale
+
+      setCrop(prev => ({
+        scale: newScale,
+        x: mouseX - (mouseX - prev.x) * scaleChange,
+        y: mouseY - (mouseY - prev.y) * scaleChange
+      }))
+    }
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [crop.scale])
+
   const handleMouseDown = (e) => {
     setIsDragging(true)
     setDragStart({
@@ -110,26 +147,6 @@ function ImageCropper({ image, onCropComplete, targetSize }) {
 
   const handleMouseUp = () => {
     setIsDragging(false)
-  }
-
-  const handleWheel = (e) => {
-    e.preventDefault()
-
-    const delta = e.deltaY > 0 ? 0.95 : 1.05
-    const newScale = Math.max(0.1, Math.min(5, crop.scale * delta))
-
-    // Zoom towards mouse position
-    const rect = canvasRef.current.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-
-    const scaleChange = newScale / crop.scale
-
-    setCrop(prev => ({
-      scale: newScale,
-      x: mouseX - (mouseX - prev.x) * scaleChange,
-      y: mouseY - (mouseY - prev.y) * scaleChange
-    }))
   }
 
   const handleApplyCrop = () => {
@@ -200,7 +217,6 @@ function ImageCropper({ image, onCropComplete, targetSize }) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         />
       </div>

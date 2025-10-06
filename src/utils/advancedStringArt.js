@@ -344,6 +344,7 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
 
   // Main greedy algorithm with improvements
   const lineSequence = []
+  const steps = [] // Store each line as a step
   let currentPin = 0
   const recentPins = new Array(20).fill(-1)
 
@@ -373,6 +374,14 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
 
     lineSequence.push(bestPin)
 
+    // Save each line as a step
+    steps.push({
+      lineCount: lineSequence.length,
+      lineSequence: [...lineSequence], // Clone array
+      fromPin: currentPin,
+      toPin: bestPin
+    })
+
     const linePixels = lineCache[bestPin * pins + currentPin]
     updateErrorArray(errorArray, linePixels, lineWeight, imageSize)
 
@@ -394,6 +403,7 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
   return {
     lineSequence,
     pinCoords,
+    steps, // Include steps for visualization
     parameters: {
       pins,
       minDistance,
@@ -408,6 +418,7 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
     },
     stats: {
       totalLines: lineSequence.length,
+      totalSteps: steps.length,
       generatedAt: new Date().toISOString()
     }
   }

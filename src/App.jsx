@@ -3,6 +3,7 @@ import ImageUploader from './components/ImageUploader'
 import ImageCropper from './components/ImageCropper'
 import ParameterControls from './components/ParameterControls'
 import StringArtCanvas from './components/StringArtCanvas'
+import JSONImporter from './components/JSONImporter'
 import Toast from './components/Toast'
 import LandingHero from './components/LandingHero'
 import FAQ from './components/FAQ'
@@ -54,7 +55,7 @@ function App() {
   const handleCropComplete = (croppedImage) => {
     setImage(croppedImage)
     setShowCropper(false)
-    setOriginalImage(null)
+    // Keep originalImage so user can re-edit crop
     showToast(en.toast.imageCropped, 'success')
   }
 
@@ -119,6 +120,52 @@ function App() {
     showToast(en.toast.jsonExported, 'success')
   }
 
+  const handleJSONImport = (jsonData) => {
+    try {
+      // Generate steps if they don't exist (for backward compatibility)
+      if (!jsonData.steps && jsonData.lineSequence) {
+        const steps = []
+        let currentPin = 0
+
+        for (let i = 0; i < jsonData.lineSequence.length; i++) {
+          const nextPin = jsonData.lineSequence[i]
+          steps.push({
+            lineCount: i + 1,
+            lineSequence: jsonData.lineSequence.slice(0, i + 1),
+            fromPin: currentPin,
+            toPin: nextPin
+          })
+          currentPin = nextPin
+        }
+
+        jsonData.steps = steps
+        if (jsonData.stats) {
+          jsonData.stats.totalSteps = steps.length
+        }
+      }
+
+      // Set the result from imported JSON
+      setResult(jsonData)
+
+      // Update parameters if they exist
+      if (jsonData.parameters) {
+        setParameters(prev => ({
+          ...prev,
+          ...jsonData.parameters
+        }))
+      }
+
+      // Clear current image and cropper
+      setImage(null)
+      setOriginalImage(null)
+      setShowCropper(false)
+
+      showToast('String art imported successfully!', 'success')
+    } catch (error) {
+      showToast('Error importing JSON: ' + error.message, 'error')
+    }
+  }
+
   const scrollToApp = () => {
     const appContent = document.querySelector('.app-content')
     if (appContent) {
@@ -154,6 +201,8 @@ function App() {
             currentImage={image}
           />
 
+          <JSONImporter onJSONImport={handleJSONImport} />
+
           <ParameterControls
             parameters={parameters}
             onParameterChange={handleParameterChange}
@@ -184,9 +233,6 @@ function App() {
                 {en.actions.export}
               </button>
             )}
-
-            {/* Sidebar Ad - Below Actions */}
-            <AdBanner slot="9552534575" format="vertical" />
           </div>
         </div>
 
@@ -207,7 +253,7 @@ function App() {
               isProcessing={isProcessing}
               progress={progress}
               onNotify={showToast}
-              onEditCrop={() => setShowCropper(true)}
+              onEditCrop={originalImage ? () => setShowCropper(true) : null}
             />
           )}
         </div>
@@ -217,6 +263,10 @@ function App() {
       <AdBanner slot="5844513418" format="horizontal" />
 
       <FAQ />
+
+      
+      {/* Ad Banner - Below Preview */}
+      <AdBanner slot="9552534575" format="square" />
 
       {/* Footer */}
       <footer className="app-footer">

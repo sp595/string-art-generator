@@ -1,0 +1,49 @@
+.json-importer {
+  width: 100%;
+}
+
+.btn-import-json {
+  width: 100%;
+  padding: 12px 20px;
+  background: white;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  color: #667eea;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-import-json:hover {
+  background: #667eea;
+  color: white;
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-import-json:active {
+  transform: translateY(0);
+}
+
+.import-icon {
+  flex-shrink: 0;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .btn-import-json {
+    background: #2d3748;
+    border-color: #667eea;
+  }
+
+  .btn-import-json:hover {
+    background: #667eea;
+    color: white;
+  }
+}

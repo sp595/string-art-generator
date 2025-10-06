@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
+import StepByStepControls from './StepByStepControls'
 import { en } from '../i18n/en'
 import './StringArtCanvas.css'
 
 function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0, onNotify, onEditCrop }) {
   const canvasRef = useRef(null)
   const [showOriginal, setShowOriginal] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const playIntervalRef = useRef(null)
 
   const getStatusMessage = (progress) => {
     if (progress < 10) return en.loading.states.loadingImage
@@ -14,6 +18,40 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     if (progress < 100) return en.loading.states.generating
     return en.loading.states.complete
   }
+
+  // Reset step when result changes
+  useEffect(() => {
+    if (result && result.steps) {
+      setCurrentStep(result.steps.length - 1) // Start at final step
+    }
+  }, [result])
+
+  // Handle auto-play
+  useEffect(() => {
+    if (isPlaying && result && result.steps) {
+      playIntervalRef.current = setInterval(() => {
+        setCurrentStep(prev => {
+          const next = prev + 1
+          if (next >= result.steps.length) {
+            setIsPlaying(false)
+            return result.steps.length - 1
+          }
+          return next
+        })
+      }, 100) // 100ms between steps
+    } else {
+      if (playIntervalRef.current) {
+        clearInterval(playIntervalRef.current)
+        playIntervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (playIntervalRef.current) {
+        clearInterval(playIntervalRef.current)
+      }
+    }
+  }, [isPlaying, result])
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -34,8 +72,9 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
       // Show original image
       ctx.drawImage(image, 0, 0, imageSize, imageSize)
     } else if (result && !isProcessing) {
-      // Draw string art
-      drawStringArt(ctx, result, imageSize)
+      // Draw string art (with step if available)
+      const stepData = result.steps && result.steps[currentStep]
+      drawStringArt(ctx, result, imageSize, stepData)
     } else if (image && !result) {
       // Show preview of original image
       ctx.globalAlpha = 0.3
@@ -45,7 +84,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
       // Draw pin positions preview
       drawPinPreview(ctx, parameters)
     }
-  }, [image, result, parameters, isProcessing, showOriginal])
+  }, [image, result, parameters, isProcessing, showOriginal, currentStep])
 
   const drawPinPreview = (ctx, params) => {
     const { pins, imageSize } = params
@@ -69,8 +108,11 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     }
   }
 
-  const drawStringArt = (ctx, result, imageSize) => {
+  const drawStringArt = (ctx, result, imageSize, stepData = null) => {
     const { lineSequence, pinCoords } = result
+
+    // Use step data if available, otherwise use full sequence
+    const sequenceToDraw = stepData ? stepData.lineSequence : lineSequence
 
     // Draw white background
     ctx.fillStyle = 'white'
@@ -82,7 +124,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     ctx.lineCap = 'round'
 
     let currentPin = 0
-    for (const nextPin of lineSequence) {
+    for (const nextPin of sequenceToDraw) {
       const p1 = pinCoords[currentPin]
       const p2 = pinCoords[nextPin]
 
@@ -121,7 +163,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
       <div className="canvas-header">
         <h3>{en.canvas.title}</h3>
         <div className="canvas-controls">
-          {image && onEditCrop && (
+          {image && onEditCrop && !result && (
             <button
               className="edit-crop-btn"
               onClick={onEditCrop}
@@ -132,12 +174,14 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
           )}
           {result && (
             <>
-              <button
-                className="toggle-btn"
-                onClick={() => setShowOriginal(!showOriginal)}
-              >
-                {showOriginal ? en.canvas.showStringArt : en.canvas.showOriginal}
-              </button>
+              {image && (
+                <button
+                  className="toggle-btn"
+                  onClick={() => setShowOriginal(!showOriginal)}
+                >
+                  {showOriginal ? en.canvas.showStringArt : en.canvas.showOriginal}
+                </button>
+              )}
               <button className="download-btn" onClick={handleDownloadImage}>
                 {en.canvas.download}
               </button>
@@ -147,7 +191,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
       </div>
 
       <div className="canvas-container">
-        {image && (
+        {(image || result) && (
           <canvas ref={canvasRef} className="canvas" />
         )}
 
@@ -200,7 +244,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
           </div>
         )}
 
-        {!image && !isProcessing && (
+        {!image && !result && !isProcessing && (
           <div className="empty-state">
             <p>{en.canvas.empty}</p>
           </div>
@@ -208,20 +252,34 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
       </div>
 
       {result && (
-        <div className="stats">
-          <div className="stat-item">
-            <span className="stat-label">{en.canvas.stats.linesGenerated}</span>
-            <span className="stat-value">{result.stats.totalLines}</span>
+        <>
+          <div className="stats">
+            <div className="stat-item">
+              <span className="stat-label">{en.canvas.stats.linesGenerated}</span>
+              <span className="stat-value">{result.stats.totalLines}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">{en.canvas.stats.pinsUsed}</span>
+              <span className="stat-value">{result.parameters.pins}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">{en.canvas.stats.lineWeight}</span>
+              <span className="stat-value">{result.parameters.lineWeight}</span>
+            </div>
           </div>
-          <div className="stat-item">
-            <span className="stat-label">{en.canvas.stats.pinsUsed}</span>
-            <span className="stat-value">{result.parameters.pins}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">{en.canvas.stats.lineWeight}</span>
-            <span className="stat-value">{result.parameters.lineWeight}</span>
-          </div>
-        </div>
+
+          {/* Step-by-Step Controls */}
+          {result.steps && result.steps.length > 1 && (
+            <StepByStepControls
+              currentStep={currentStep}
+              totalSteps={result.steps.length}
+              onStepChange={setCurrentStep}
+              isPlaying={isPlaying}
+              onPlayPause={() => setIsPlaying(!isPlaying)}
+              stepData={result.steps[currentStep]}
+            />
+          )}
+        </>
       )}
     </div>
   )

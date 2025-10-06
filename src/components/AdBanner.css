@@ -19,8 +19,10 @@
 }
 
 .ad-banner-square {
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
   min-height: 250px;
+  margin: 20px auto;
 }
 
 /* Responsive */
