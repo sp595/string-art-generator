@@ -139,7 +139,7 @@ function App() {
       <LandingHero onGetStarted={scrollToApp} />
 
       {/* Top Ad Banner - After Hero Section */}
-      <AdBanner slot="YOUR_TOP_BANNER_SLOT_ID" format="horizontal" />
+      <AdBanner slot="1418183247" format="horizontal" />
 
       <div className="app">
         <header className="app-header">
@@ -186,7 +186,7 @@ function App() {
             )}
 
             {/* Sidebar Ad - Below Actions */}
-            <AdBanner slot="YOUR_SIDEBAR_AD_SLOT_ID" format="vertical" />
+            <AdBanner slot="9552534575" format="vertical" />
           </div>
         </div>
 
@@ -214,7 +214,7 @@ function App() {
       </div>
 
       {/* Bottom Ad Banner - Before FAQ */}
-      <AdBanner slot="YOUR_BOTTOM_BANNER_SLOT_ID" format="horizontal" />
+      <AdBanner slot="5844513418" format="horizontal" />
 
       <FAQ />
     </div>
