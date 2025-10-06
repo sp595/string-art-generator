@@ -1,0 +1,32 @@
+.ad-banner {
+  width: 100%;
+  margin: 20px 0;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90px;
+}
+
+.ad-banner-horizontal {
+  max-width: 100%;
+}
+
+.ad-banner-vertical {
+  width: 160px;
+}
+
+.ad-banner-square {
+  width: 300px;
+  min-height: 250px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ad-banner-vertical,
+  .ad-banner-square {
+    width: 100%;
+  }
+}
