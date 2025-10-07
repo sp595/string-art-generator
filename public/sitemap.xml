@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
     xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
     <!-- Home -->
     <url>
         <loc>https://stringartgenerator.cmdc.it/</loc>
-        <lastmod>2025-10-06</lastmod>
-        <changefreq>weekly</changefreq>
+        <lastmod>2025-10-07</lastmod>
+        <changefreq>daily</changefreq>
         <priority>1.0</priority>
+        <image:image>
+            <image:loc>https://stringartgenerator.cmdc.it/og-image.jpg</image:loc>
+            <image:title>String Art Generator - Transform images into thread art</image:title>
+            <image:caption>Free online string art generator tool</image:caption>
+        </image:image>
     </url>
 </urlset>

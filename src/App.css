@@ -22,16 +22,17 @@
 
 .app-content {
   display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 30px;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
   align-items: start;
 }
 
 .left-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
+
 
 .right-panel {
   background: white;
@@ -58,9 +59,31 @@
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.actions .btn-primary {
+  grid-column: 1 / -1;
+}
+
+.actions .btn-secondary {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .actions .btn-primary {
+    grid-column: auto;
+  }
+
+  .actions .btn-secondary {
+    grid-column: auto;
+  }
 }
 
 .btn-primary,
@@ -145,6 +168,7 @@
 @media (max-width: 1024px) {
   .app-content {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .left-panel {
@@ -153,6 +177,42 @@
 
   .right-panel {
     order: 1;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: 2rem;
+  }
+
+  .app-header p {
+    font-size: 1rem;
+  }
+
+  .app-content {
+    gap: 15px;
+  }
+
+  .right-panel {
+    padding: 15px;
+    min-height: 300px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .right-panel {
+    padding: 12px;
   }
 }
 

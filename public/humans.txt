@@ -1,0 +1,18 @@
+/* TEAM */
+Developer: CMDC
+Site: https://cmdc.it
+Location: Italy
+
+/* THANKS */
+String Art Algorithm: Greedy optimization with edge detection
+Framework: React 18 + Vite
+Hosting: Netlify/Vercel
+
+/* SITE */
+Last update: 2025/10/07
+Language: English
+Doctype: HTML5
+IDE: Visual Studio Code
+Standards: HTML5, CSS3, ECMAScript 2022
+Components: React, Vite, Web Workers
+Software: String Art Generator v2.0

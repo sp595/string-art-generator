@@ -8,12 +8,33 @@
   gap: 12px;
 }
 
+@media (max-width: 768px) {
+  .step-controls {
+    padding: 14px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-controls {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+
 .step-info {
   display: flex;
   flex-direction: column;
   gap: 8px;
   font-size: 0.9rem;
   color: #495057;
+}
+
+@media (max-width: 480px) {
+  .step-info {
+    font-size: 0.85rem;
+    gap: 6px;
+  }
 }
 
 .step-header {
@@ -43,6 +64,15 @@
   background: #e9ecef;
   border-radius: 6px;
   font-size: 0.85rem;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .pin-info {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    gap: 6px;
+  }
 }
 
 .pin-label {
@@ -76,6 +106,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .step-btn {
+    padding: 8px 12px;
+    font-size: 1.1rem;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-btn {
+    padding: 8px 10px;
+    font-size: 1rem;
+    min-width: 40px;
+  }
+
+  .step-btn-play {
+    min-width: 56px;
+  }
 }
 
 .step-btn:hover:not(:disabled) {

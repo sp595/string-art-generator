@@ -1,14 +1,30 @@
 User-agent: *
-Disallow: /wp-admin/
-Disallow: /cgi-bin/
-Disallow: /tmp/
-Disallow: /private/
-
-# Se vuoi bloccare l’indicizzazione di certi file
-Disallow: /*.php$
-Disallow: /*?*
-
-# Se vuoi permettere a tutti i bot di indicizzare tutto tranne le directory sopra
 Allow: /
 
+# Prioritize important pages for crawling
+Crawl-delay: 0
+
+# Sitemap location
 Sitemap: https://stringartgenerator.cmdc.it/sitemap.xml
+
+# Allow all major search engine bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /

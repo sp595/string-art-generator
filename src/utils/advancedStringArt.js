@@ -234,7 +234,7 @@ function updateErrorArray(errorArray, linePixels, lineWeight, imageSize) {
  * Simplified version to avoid performance issues
  */
 function evaluateWithLookahead(currentPin, testPin, errorArray, importanceMap, lineCache,
-                                pins, minDistance, recentPins, lookaheadDepth, imageSize, lineWeight) {
+  pins, minDistance, recentPins, lookaheadDepth, imageSize, lineWeight) {
   // Score for immediate line
   let immediatePixels = lineCache[testPin * pins + currentPin]
   if (!immediatePixels) return 0
@@ -361,7 +361,7 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
 
       const score = useLookahead
         ? evaluateWithLookahead(currentPin, testPin, errorArray, importanceMap, lineCache,
-                                pins, minDistance, recentPins, lookaheadDepth, imageSize, lineWeight)
+          pins, minDistance, recentPins, lookaheadDepth, imageSize, lineWeight)
         : calculateWeightedLineError(errorArray, importanceMap, lineCache[testPin * pins + currentPin], imageSize)
 
       if (score > maxScore) {
@@ -403,7 +403,7 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
   return {
     lineSequence,
     pinCoords,
-    steps, // Include steps for visualization
+    steps, // Include steps for visualization (not exported)
     parameters: {
       pins,
       minDistance,
@@ -418,7 +418,6 @@ export async function generateAdvancedStringArt(image, parameters, onProgress) {
     },
     stats: {
       totalLines: lineSequence.length,
-      totalSteps: steps.length,
       generatedAt: new Date().toISOString()
     }
   }

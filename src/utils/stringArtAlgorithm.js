@@ -219,7 +219,7 @@ export async function generateStringArt(image, parameters, onProgress) {
   return {
     lineSequence,
     pinCoords,
-    steps, // Include steps for visualization
+    steps, // Include steps for visualization (not exported)
     parameters: {
       pins,
       minDistance,
@@ -229,7 +229,6 @@ export async function generateStringArt(image, parameters, onProgress) {
     },
     stats: {
       totalLines: lineSequence.length,
-      totalSteps: steps.length,
       generatedAt: new Date().toISOString()
     }
   }

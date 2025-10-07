@@ -1,0 +1,3 @@
+Contact: mailto:info@cmdc.it
+Preferred-Languages: en, it
+Canonical: https://stringartgenerator.cmdc.it/.well-known/security.txt

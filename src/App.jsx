@@ -107,7 +107,13 @@ function App() {
   const handleExport = () => {
     if (!result) return
 
-    const dataStr = JSON.stringify(result, null, 2)
+    // Export without steps array (too large) and with all UI parameters
+    const { steps, parameters: resultParams, ...restData } = result
+    const exportData = {
+      ...restData,
+      parameters: parameters // Use all UI parameters instead of algorithm-specific ones
+    }
+    const dataStr = JSON.stringify(exportData, null, 2)
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
     const exportFileDefaultName = `string-art-${Date.now()}.json`
