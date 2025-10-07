@@ -6,10 +6,10 @@ function LandingHero({ onGetStarted }) {
     <section className="landing-hero">
       <div className="hero-content">
         <h1 className="hero-title">
-          Create Stunning <span className="highlight">String Art</span> Online
+          Free String Art Generator - Create Stunning <span className="highlight">Thread Art</span> from Photos
         </h1>
         <p className="hero-subtitle">
-          Transform your photos into beautiful thread art patterns. Free, easy-to-use tool with advanced algorithms for professional results.
+          Transform any image into beautiful string art patterns instantly. Our free online string art generator uses advanced edge detection algorithms to create professional DIY nail and thread art designs. Perfect for wall art, home decor, and personalized gifts.
         </p>
 
         <div className="hero-features">

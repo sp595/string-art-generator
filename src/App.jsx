@@ -8,6 +8,9 @@ import Toast from './components/Toast'
 import LandingHero from './components/LandingHero'
 import FAQ from './components/FAQ'
 import AdBanner from './components/AdBanner'
+import HowItWorks from './components/HowItWorks'
+import Benefits from './components/Benefits'
+import SEOFooter from './components/SEOFooter'
 import { generateStringArt } from './utils/stringArtAlgorithm'
 import { generateAdvancedStringArt } from './utils/advancedStringArt'
 import { useStringArtWorker } from './hooks/useStringArtWorker'
@@ -191,12 +194,18 @@ function App() {
 
       <LandingHero onGetStarted={scrollToApp} />
 
+      {/* Benefits Section - SEO Content */}
+      <Benefits />
+
+      {/* How It Works Section - SEO Content */}
+      <HowItWorks />
+
       {/* Top Ad Banner - After Hero Section */}
       <AdBanner slot="1418183247" format="horizontal" />
 
       <div className="app">
         <header className="app-header">
-          <h1>{en.header.title}</h1>
+          <h2>{en.header.title}</h2>
           <p>{en.header.subtitle}</p>
         </header>
 
@@ -273,22 +282,10 @@ function App() {
       
       {/* Ad Banner - Below Preview */}
       <AdBanner slot="9552534575" format="square" />
-
-      {/* Footer */}
-      <footer className="app-footer">
-        <p>
-          © {new Date().getFullYear()} — Powered by{" "}
-          <a
-            href="https://cmdc.it"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="footer-link"
-          >
-            cmdc
-          </a>
-        </p>
-      </footer>
     </div>
+
+      {/* SEO Footer */}
+      <SEOFooter />
     </>
   )
 }

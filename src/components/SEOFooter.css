@@ -1,0 +1,133 @@
+.seo-footer {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  color: #e2e8f0;
+  padding: 50px 20px 20px;
+  margin-top: 60px;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-section h3 {
+  color: white;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 8px;
+}
+
+.footer-section p {
+  line-height: 1.6;
+  color: #cbd5e0;
+  font-size: 0.95rem;
+}
+
+.footer-section nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section nav li {
+  margin-bottom: 10px;
+}
+
+.footer-section nav a {
+  color: #cbd5e0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.footer-section nav a:hover {
+  color: #667eea;
+}
+
+.use-cases {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.use-cases li {
+  color: #cbd5e0;
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+.use-cases li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+}
+
+.footer-keywords {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #a0aec0;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom p {
+  color: #a0aec0;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.footer-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.footer-tech {
+  font-size: 0.85rem !important;
+  color: #718096 !important;
+}
+
+@media (max-width: 768px) {
+  .seo-footer {
+    padding: 40px 20px 20px;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer-section h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .seo-footer {
+    padding: 30px 15px 15px;
+  }
+
+  .footer-section p,
+  .footer-section nav a,
+  .use-cases li {
+    font-size: 0.9rem;
+  }
+}

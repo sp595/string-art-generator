@@ -40,9 +40,9 @@ function FAQ() {
   ]
 
   return (
-    <section className="faq-section">
-      <h2>Frequently Asked Questions</h2>
-      <p className="faq-subtitle">Everything you need to know about our String Art Generator</p>
+    <section className="faq-section" id="faq">
+      <h2>Frequently Asked Questions About String Art Generator</h2>
+      <p className="faq-subtitle">Everything you need to know about creating beautiful thread art online</p>
 
       <div className="faq-list">
         {faqs.map((faq, index) => (

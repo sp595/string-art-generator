@@ -4,7 +4,9 @@
       "Bash(npm run dev:*)",
       "mcp__ide__getDiagnostics",
       "Bash(npm run build:*)",
-      "Bash(magick:*)"
+      "Bash(magick:*)",
+      "WebFetch(domain:suite.seotesteronline.com)",
+      "WebFetch(domain:stringartgenerator.cmdc.it)"
     ],
     "deny": [],
     "ask": []

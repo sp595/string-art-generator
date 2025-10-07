@@ -49,6 +49,7 @@ function ImageUploader({ onImageUpload, currentImage }) {
         accept="image/*"
         onChange={handleFileChange}
         style={{ display: 'none' }}
+        aria-label="Upload image file for string art generation"
       />
 
       <div
@@ -56,12 +57,15 @@ function ImageUploader({ onImageUpload, currentImage }) {
         onClick={handleClick}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
+        role="button"
+        tabIndex={0}
+        aria-label="Click or drag and drop to upload image"
       >
         {currentImage || preview ? (
           <div className="preview-container">
             <img
               src={currentImage?.src || preview}
-              alt="Preview"
+              alt="Uploaded image preview for string art generation"
               className="preview-image"
               style={{ objectFit: 'contain' }}
             />
