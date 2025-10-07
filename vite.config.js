@@ -32,8 +32,6 @@ export default defineConfig({
   esbuild: {
     // Remove console and debugger in production
     drop: ['console', 'debugger'],
-    // Optimize JSX transform
-    jsxInject: `import React from 'react'`,
     legalComments: 'none',
   },
   // Performance optimizations
