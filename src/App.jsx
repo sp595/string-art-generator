@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, lazy, Suspense } from 'react'
 import ImageUploader from './components/ImageUploader'
 import ImageCropper from './components/ImageCropper'
 import ParameterControls from './components/ParameterControls'
@@ -6,16 +6,18 @@ import StringArtCanvas from './components/StringArtCanvas'
 import JSONImporter from './components/JSONImporter'
 import Toast from './components/Toast'
 import LandingHero from './components/LandingHero'
-import FAQ from './components/FAQ'
-import AdBanner from './components/AdBanner'
-import HowItWorks from './components/HowItWorks'
-import Benefits from './components/Benefits'
-import SEOFooter from './components/SEOFooter'
 import { generateStringArt } from './utils/stringArtAlgorithm'
 import { generateAdvancedStringArt } from './utils/advancedStringArt'
 import { useStringArtWorker } from './hooks/useStringArtWorker'
 import { en } from './i18n/en'
 import './App.css'
+
+// Lazy load non-critical components for better FCP
+const FAQ = lazy(() => import('./components/FAQ'))
+const AdBanner = lazy(() => import('./components/AdBanner'))
+const HowItWorks = lazy(() => import('./components/HowItWorks'))
+const Benefits = lazy(() => import('./components/Benefits'))
+const SEOFooter = lazy(() => import('./components/SEOFooter'))
 
 function App() {
   const [originalImage, setOriginalImage] = useState(null)
@@ -194,14 +196,16 @@ function App() {
 
       <LandingHero onGetStarted={scrollToApp} />
 
-      {/* Benefits Section - SEO Content */}
-      <Benefits />
+      <Suspense fallback={<div style={{ minHeight: '200px' }} />}>
+        {/* Benefits Section - SEO Content */}
+        <Benefits />
 
-      {/* How It Works Section - SEO Content */}
-      <HowItWorks />
+        {/* How It Works Section - SEO Content */}
+        <HowItWorks />
 
-      {/* Top Ad Banner - After Hero Section */}
-      <AdBanner slot="1418183247" format="horizontal" />
+        {/* Top Ad Banner - After Hero Section */}
+        <AdBanner slot="1418183247" format="horizontal" />
+      </Suspense>
 
       <div className="app">
         <header className="app-header">
@@ -274,18 +278,22 @@ function App() {
         </div>
       </div>
 
-      {/* Bottom Ad Banner - Before FAQ */}
-      <AdBanner slot="5844513418" format="horizontal" />
+      <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
+        {/* Bottom Ad Banner - Before FAQ */}
+        <AdBanner slot="5844513418" format="horizontal" />
 
-      <FAQ />
+        <FAQ />
 
-      
-      {/* Ad Banner - Below Preview */}
-      <AdBanner slot="9552534575" format="square" />
+
+        {/* Ad Banner - Below Preview */}
+        <AdBanner slot="9552534575" format="square" />
+      </Suspense>
     </div>
 
-      {/* SEO Footer */}
-      <SEOFooter />
+      <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
+        {/* SEO Footer */}
+        <SEOFooter />
+      </Suspense>
     </>
   )
 }

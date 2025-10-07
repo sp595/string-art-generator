@@ -6,22 +6,35 @@ export default defineConfig({
   build: {
     // Optimize bundle size with esbuild (faster than terser)
     minify: 'esbuild',
+    // Target modern browsers for smaller bundle
+    target: 'es2020',
     // Code splitting for better caching
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
         },
+        // Optimize chunk loading
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
     // Generate source maps for production debugging
     sourcemap: false,
     // Optimize chunk size
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
+    // CSS code splitting
+    cssCodeSplit: true,
+    // Inline small assets as base64
+    assetsInlineLimit: 4096,
   },
   esbuild: {
     // Remove console and debugger in production
     drop: ['console', 'debugger'],
+    // Optimize JSX transform
+    jsxInject: `import React from 'react'`,
+    legalComments: 'none',
   },
   // Performance optimizations
   server: {
