@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import AppIcon from './AppIcon'
 import StepByStepControls from './StepByStepControls'
 import { en } from '../i18n/en'
-import { exportTiledCanvasToPdf, getA4TilingConfig } from '../utils/tiledPdfExport'
+import { exportPinStencilToPdf, getA4TilingConfig } from '../utils/tiledPdfExport'
 import './StringArtCanvas.css'
 
 function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0, onNotify, onEditCrop }) {
@@ -155,20 +155,6 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     }
   }
 
-  const buildRenderCanvas = () => {
-    if (!result) return null
-
-    const renderCanvas = document.createElement('canvas')
-    const { imageSize } = parameters
-    renderCanvas.width = imageSize
-    renderCanvas.height = imageSize
-
-    const renderCtx = renderCanvas.getContext('2d')
-    drawStringArt(renderCtx, result, imageSize)
-
-    return renderCanvas
-  }
-
   const getTilingConfig = () => {
     return getA4TilingConfig(physicalSizeCm, pageOrientation, pageMarginMm)
   }
@@ -189,15 +175,14 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
   const handleExportTiledPdf = async () => {
     if (!result) return
 
-    const renderCanvas = buildRenderCanvas()
-    if (!renderCanvas) return
-
     try {
-      const tiling = await exportTiledCanvasToPdf(renderCanvas, {
+      const tiling = await exportPinStencilToPdf({
+        pinCoords: result.pinCoords,
+        imageSize: result.parameters.imageSize,
         physicalSizeCm,
         orientation: pageOrientation,
         marginMm: pageMarginMm,
-        fileName: `string-art-a4-${Number(physicalSizeCm) || 0}cm-${Date.now()}.pdf`
+        fileName: `string-art-pin-stencil-${Number(physicalSizeCm) || 0}cm-${Date.now()}.pdf`
       })
 
       if (onNotify) {

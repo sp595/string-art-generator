@@ -255,11 +255,11 @@ export const en = {
     showOriginal: 'Show Original',
     showStringArt: 'Show String Art',
     download: 'Download Image',
-    downloadTiled: 'Download A4 PDF',
+    downloadTiled: 'Download Pin Stencil PDF',
     empty: 'Load an image to start',
     tiling: {
-      title: 'A4 PDF Export',
-      description: 'Generate a real-scale PDF split across multiple A4 sheets.',
+      title: 'A4 Pin Stencil PDF',
+      description: 'Generate a real-scale stencil with numbered pins, split across multiple A4 sheets.',
       physicalSize: 'Final diameter / square size (cm)',
       orientation: 'Page orientation',
       margin: 'Page margin (mm)',
@@ -299,8 +299,8 @@ export const en = {
     jsonExported: 'JSON coordinates exported successfully!',
     jsonImportError: 'Errore durante l’import del JSON.',
     imageDownloaded: 'PNG image downloaded successfully!',
-    tiledExported: 'A4 PDF exported successfully: {pages} pages.',
-    pdfExportFailed: 'Error exporting the A4 PDF.',
+    tiledExported: 'Pin stencil PDF exported successfully: {pages} pages.',
+    pdfExportFailed: 'Error exporting the pin stencil PDF.',
     error: 'Error generating string art'
   },
 
