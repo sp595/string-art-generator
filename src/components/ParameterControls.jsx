@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import AppIcon from './AppIcon'
 import { en } from '../i18n/en'
 import './ParameterControls.css'
 
@@ -67,7 +68,20 @@ function ParameterControls({ parameters, onParameterChange, disabled }) {
         <div key={control.name} className="control-group">
           <div className="control-header">
             <label htmlFor={control.name}>{control.label}</label>
-            <span className="control-value">{parameters[control.name]}</span>
+            <div className="control-value-group">
+              <span className="control-value">{parameters[control.name]}</span>
+              <input
+                type="number"
+                min={control.min}
+                max={control.max}
+                step={control.step}
+                value={parameters[control.name]}
+                onChange={(e) => handleChange(control.name, e.target.value)}
+                disabled={disabled}
+                className="control-number"
+                aria-label={`${control.label} numeric input`}
+              />
+            </div>
           </div>
 
           <input
@@ -92,7 +106,8 @@ function ParameterControls({ parameters, onParameterChange, disabled }) {
           onClick={() => setShowAdvanced(!showAdvanced)}
           disabled={disabled}
         >
-          {showAdvanced ? '▼' : '▶'} {en.advanced.toggle}
+          <AppIcon name={showAdvanced ? 'chevronDown' : 'chevronRight'} size={16} />
+          {en.advanced.toggle}
         </button>
 
         {showAdvanced && (
@@ -103,7 +118,7 @@ function ParameterControls({ parameters, onParameterChange, disabled }) {
                   type="checkbox"
                   checked={parameters.useWebWorker || false}
                   onChange={(e) => handleChange('useWebWorker', e.target.checked)}
-                  disabled={disabled || parameters.useAdvancedAlgorithm}
+                  disabled={disabled}
                 />
                 {en.advanced.webWorker.label}
               </label>
@@ -200,18 +215,21 @@ function ParameterControls({ parameters, onParameterChange, disabled }) {
         <strong>{en.parameters.estimatedTime}</strong>{' '}
         {Math.ceil((parameters.maxLines * parameters.pins) / (parameters.useAdvancedAlgorithm ? 500000 : 1000000))} {en.parameters.seconds}
         {parameters.useAdvancedAlgorithm && (
-          <div style={{ marginTop: '8px', color: '#ff6b6b' }}>
-            ⚠️ {en.advanced.warnings.advanced}
+          <div style={{ marginTop: '8px', color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AppIcon name="alert" size={16} />
+            {en.advanced.warnings.advanced}
           </div>
         )}
         {parameters.useLookahead && (
-          <div style={{ marginTop: '4px', color: '#ff6b6b' }}>
-            ⚠️ {en.advanced.warnings.lookahead}
+          <div style={{ marginTop: '4px', color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AppIcon name="alert" size={16} />
+            {en.advanced.warnings.lookahead}
           </div>
         )}
         {parameters.useAntialiasing && (
-          <div style={{ marginTop: '4px', color: '#ff6b6b' }}>
-            ⚠️ {en.advanced.warnings.antialiasing}
+          <div style={{ marginTop: '4px', color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AppIcon name="alert" size={16} />
+            {en.advanced.warnings.antialiasing}
           </div>
         )}
       </div>

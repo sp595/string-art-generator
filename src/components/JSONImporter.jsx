@@ -1,12 +1,15 @@
 import React, { useRef } from 'react'
+import AppIcon from './AppIcon'
+import { en } from '../i18n/en'
 import './JSONImporter.css'
 
 /**
  * JSON Importer Component
  * Allows importing previously exported string art JSON files
  */
-function JSONImporter({ onJSONImport }) {
+function JSONImporter({ onJSONImport, onNotify }) {
   const fileInputRef = useRef(null)
+  const { jsonImporter, toast } = en
 
   const handleFileChange = (event) => {
     const file = event.target.files[0]
@@ -19,18 +22,19 @@ function JSONImporter({ onJSONImport }) {
 
           // Validate JSON structure
           if (!jsonData.lineSequence || !jsonData.pinCoords || !jsonData.parameters) {
-            throw new Error('Invalid string art JSON format')
+            throw new Error(jsonImporter.invalidFormat)
           }
 
           onJSONImport(jsonData)
+          onNotify?.(jsonImporter.imported, 'success')
         } catch (error) {
-          alert('Error loading JSON: ' + error.message)
+          onNotify?.(`${toast.jsonImportError} ${error.message}`, 'error')
         }
       }
 
       reader.readAsText(file)
     } else {
-      alert('Please select a valid JSON file')
+      onNotify?.(jsonImporter.invalidFile, 'error')
     }
 
     // Reset input to allow re-importing the same file
@@ -54,24 +58,10 @@ function JSONImporter({ onJSONImport }) {
       <button
         className="btn-import-json"
         onClick={handleClick}
-        title="Import previously exported string art"
+        title={jsonImporter.title}
       >
-        <svg
-          className="import-icon"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-          />
-        </svg>
-        Import JSON
+        <AppIcon name="upload" size={18} className="import-icon" />
+        {jsonImporter.button}
       </button>
     </div>
   )

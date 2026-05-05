@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { en } from '../i18n/en'
 import './AdBanner.css'
 
 /**
@@ -10,6 +11,8 @@ import './AdBanner.css'
  * Formats: 'horizontal', 'vertical', 'square'
  */
 function AdBanner({ slot, format = 'horizontal', className = '' }) {
+  const { ads } = en
+
   useEffect(() => {
     try {
       // Push ad if AdSense is loaded
@@ -37,6 +40,7 @@ function AdBanner({ slot, format = 'horizontal', className = '' }) {
 
   return (
     <div className={`ad-banner ad-banner-${format} ${className}`}>
+      <div className="ad-banner-label">{ads.label}</div>
       <ins
         className="adsbygoogle"
         style={getAdStyle()}

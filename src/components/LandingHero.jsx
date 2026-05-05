@@ -1,38 +1,48 @@
 import React from 'react'
+import AppIcon from './AppIcon'
+import { en } from '../i18n/en'
 import './LandingHero.css'
 
 function LandingHero({ onGetStarted }) {
+  const { hero } = en
+
   return (
-    <section className="landing-hero">
+    <section className="landing-hero" id="features">
+      <div className="hero-orbit hero-orbit-left"></div>
+      <div className="hero-orbit hero-orbit-right"></div>
       <div className="hero-content">
+        <span className="hero-kicker">{hero.kicker}</span>
         <h1 className="hero-title">
-          Free String Art Generator - Create Stunning <span className="highlight">Thread Art</span> from Photos
+          {hero.titlePrefix} <span className="highlight">{hero.titleHighlight}</span> {hero.titleSuffix}
         </h1>
         <p className="hero-subtitle">
-          Transform any image into beautiful string art patterns instantly. Our free online string art generator uses advanced edge detection algorithms to create professional DIY nail and thread art designs. Perfect for wall art, home decor, and personalized gifts.
+          {hero.subtitle}
         </p>
 
         <div className="hero-features">
           <div className="feature">
-            <span className="feature-icon">🎨</span>
-            <span>Upload Any Image</span>
+            <span className="feature-icon"><AppIcon name="palette" size={18} /></span>
+            <span>{hero.features.upload}</span>
           </div>
           <div className="feature">
-            <span className="feature-icon">⚙️</span>
-            <span>Customize Parameters</span>
+            <span className="feature-icon"><AppIcon name="sliders" size={18} /></span>
+            <span>{hero.features.parameters}</span>
           </div>
           <div className="feature">
-            <span className="feature-icon">💾</span>
-            <span>Export & Download</span>
+            <span className="feature-icon"><AppIcon name="download" size={18} /></span>
+            <span>{hero.features.export}</span>
           </div>
         </div>
 
-        <button className="hero-cta" onClick={onGetStarted}>
-          Get Started - It's Free
-        </button>
+        <div className="hero-actions">
+          <button className="hero-cta" onClick={onGetStarted}>
+            {hero.cta}
+          </button>
+          <span className="hero-microcopy">{hero.microcopy}</span>
+        </div>
 
         <p className="hero-note">
-          No sign-up required • Works in your browser • Export as JSON or PNG
+          {hero.note}
         </p>
       </div>
     </section>

@@ -14,6 +14,8 @@ export function useStringArtWorker() {
       canvas.height = parameters.imageSize
       const ctx = canvas.getContext('2d')
 
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
       ctx.drawImage(image, 0, 0, parameters.imageSize, parameters.imageSize)
       const imageData = ctx.getImageData(0, 0, parameters.imageSize, parameters.imageSize).data
 
@@ -27,7 +29,7 @@ export function useStringArtWorker() {
 
       // Handle messages from worker
       worker.onmessage = (e) => {
-        const { type, progress, result } = e.data
+        const { type, progress, result, error } = e.data
 
         if (type === 'progress') {
           onProgress?.(progress)
@@ -35,6 +37,10 @@ export function useStringArtWorker() {
           worker.terminate()
           workerRef.current = null
           resolve(result)
+        } else if (type === 'error') {
+          worker.terminate()
+          workerRef.current = null
+          reject(new Error(error || 'Worker error'))
         }
       }
 
@@ -46,9 +52,9 @@ export function useStringArtWorker() {
 
       // Send data to worker
       worker.postMessage({
-        imageData: Array.from(imageData), // Convert to regular array for transfer
+        imageData,
         parameters
-      })
+      }, [imageData.buffer])
     })
   }, [])
 

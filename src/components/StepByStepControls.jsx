@@ -1,4 +1,5 @@
 import React from 'react'
+import AppIcon from './AppIcon'
 import './StepByStepControls.css'
 
 /**
@@ -8,6 +9,7 @@ import './StepByStepControls.css'
 function StepByStepControls({
   currentStep,
   totalSteps,
+  totalLines,
   onStepChange,
   isPlaying,
   onPlayPause,
@@ -41,15 +43,20 @@ function StepByStepControls({
     <div className="step-controls">
       <div className="step-info">
         <div className="step-header">
-          <span className="step-label">Line</span>
+          <span className="step-label">Preview Step</span>
           <span className="step-counter">
             {currentStep + 1} / {totalSteps}
           </span>
         </div>
         {stepData && (
+          <div className="step-progress">
+            Linea visualizzata: {stepData.lineCount} / {totalLines}
+          </div>
+        )}
+        {stepData && (
           <div className="pin-info">
             <span className="pin-label">Pin {stepData.fromPin}</span>
-            <span className="pin-arrow">→</span>
+            <span className="pin-arrow"><AppIcon name="moveRight" size={16} /></span>
             <span className="pin-label">Pin {stepData.toPin}</span>
           </div>
         )}
@@ -62,7 +69,7 @@ function StepByStepControls({
           disabled={currentStep === 0}
           title="First step"
         >
-          ⏮
+          <AppIcon name="chevronsLeft" size={18} />
         </button>
 
         <button
@@ -71,7 +78,7 @@ function StepByStepControls({
           disabled={currentStep === 0}
           title="Previous step"
         >
-          ◀
+          <AppIcon name="chevronLeft" size={18} />
         </button>
 
         <button
@@ -79,7 +86,7 @@ function StepByStepControls({
           onClick={onPlayPause}
           title={isPlaying ? "Pause" : "Play"}
         >
-          {isPlaying ? '⏸' : '▶'}
+          {isPlaying ? <AppIcon name="pause" size={18} /> : <AppIcon name="play" size={18} />}
         </button>
 
         <button
@@ -88,7 +95,7 @@ function StepByStepControls({
           disabled={currentStep === totalSteps - 1}
           title="Next step"
         >
-          ▶
+          <AppIcon name="chevronRight" size={18} />
         </button>
 
         <button
@@ -97,7 +104,7 @@ function StepByStepControls({
           disabled={currentStep === totalSteps - 1}
           title="Last step"
         >
-          ⏭
+          <AppIcon name="chevronsRight" size={18} />
         </button>
       </div>
 

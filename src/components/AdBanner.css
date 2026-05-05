@@ -1,13 +1,32 @@
 .ad-banner {
   width: 100%;
-  margin: 20px 0;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 8px;
+  margin: 22px 0;
+  padding: 12px;
+  border: 1px solid rgba(121, 96, 69, 0.12);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.9), rgba(244, 236, 224, 0.84));
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 10px;
   min-height: 90px;
+}
+
+.ad-banner-label {
+  align-self: flex-start;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(29, 109, 114, 0.08);
+  color: var(--teal-deep);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ad-banner .adsbygoogle {
+  overflow: hidden;
+  border-radius: 14px;
 }
 
 .ad-banner-horizontal {
@@ -15,20 +34,20 @@
 }
 
 .ad-banner-vertical {
-  width: 160px;
+  width: 180px;
 }
 
 .ad-banner-square {
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
   min-height: 250px;
-  margin: 20px auto;
+  margin: 22px auto;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .ad-banner-vertical,
   .ad-banner-square {
     width: 100%;
+    max-width: 100%;
   }
 }

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
+import AppIcon from './AppIcon'
 import StepByStepControls from './StepByStepControls'
 import { en } from '../i18n/en'
+import { exportTiledCanvasToPdf, getA4TilingConfig } from '../utils/tiledPdfExport'
 import './StringArtCanvas.css'
 
 function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0, onNotify, onEditCrop }) {
@@ -9,6 +11,9 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
   const [currentStep, setCurrentStep] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const playIntervalRef = useRef(null)
+  const [physicalSizeCm, setPhysicalSizeCm] = useState(50)
+  const [pageOrientation, setPageOrientation] = useState('portrait')
+  const [pageMarginMm, setPageMarginMm] = useState(5)
 
   const getStatusMessage = (progress) => {
     if (progress < 10) return en.loading.states.loadingImage
@@ -119,8 +124,13 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     ctx.fillRect(0, 0, imageSize, imageSize)
 
     // Draw lines
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'
-    ctx.lineWidth = 0.8
+    const rendering = result.rendering || {}
+    const lineOpacity = rendering.lineOpacity || 0.15
+    const lineWidth = rendering.lineWidth || 0.8
+    const pinRadius = rendering.pinRadius || 1.5
+
+    ctx.strokeStyle = `rgba(0, 0, 0, ${lineOpacity})`
+    ctx.lineWidth = lineWidth
     ctx.lineCap = 'round'
 
     let currentPin = 0
@@ -140,9 +150,27 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     ctx.fillStyle = '#333'
     for (const pin of pinCoords) {
       ctx.beginPath()
-      ctx.arc(pin.x, pin.y, 1.5, 0, 2 * Math.PI)
+      ctx.arc(pin.x, pin.y, pinRadius, 0, 2 * Math.PI)
       ctx.fill()
     }
+  }
+
+  const buildRenderCanvas = () => {
+    if (!result) return null
+
+    const renderCanvas = document.createElement('canvas')
+    const { imageSize } = parameters
+    renderCanvas.width = imageSize
+    renderCanvas.height = imageSize
+
+    const renderCtx = renderCanvas.getContext('2d')
+    drawStringArt(renderCtx, result, imageSize)
+
+    return renderCanvas
+  }
+
+  const getTilingConfig = () => {
+    return getA4TilingConfig(physicalSizeCm, pageOrientation, pageMarginMm)
   }
 
   const handleDownloadImage = () => {
@@ -158,6 +186,36 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
     }
   }
 
+  const handleExportTiledPdf = async () => {
+    if (!result) return
+
+    const renderCanvas = buildRenderCanvas()
+    if (!renderCanvas) return
+
+    try {
+      const tiling = await exportTiledCanvasToPdf(renderCanvas, {
+        physicalSizeCm,
+        orientation: pageOrientation,
+        marginMm: pageMarginMm,
+        fileName: `string-art-a4-${Number(physicalSizeCm) || 0}cm-${Date.now()}.pdf`
+      })
+
+      if (onNotify) {
+        onNotify(
+          en.toast.tiledExported.replace('{pages}', tiling.totalPages),
+          'success'
+        )
+      }
+    } catch (error) {
+      console.error('Error exporting tiled PDF:', error)
+      if (onNotify) {
+        onNotify(en.toast.pdfExportFailed, 'error')
+      }
+    }
+  }
+
+  const tiling = getTilingConfig()
+
   return (
     <div className="string-art-canvas">
       <div className="canvas-header">
@@ -169,7 +227,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
               onClick={onEditCrop}
               disabled={isProcessing}
             >
-              ✂️ {en.canvas.editCrop}
+              <AppIcon name="scissors" size={16} /> {en.canvas.editCrop}
             </button>
           )}
           {result && (
@@ -184,6 +242,9 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
               )}
               <button className="download-btn" onClick={handleDownloadImage}>
                 {en.canvas.download}
+              </button>
+              <button className="download-btn tiled-btn" onClick={handleExportTiledPdf}>
+                {en.canvas.downloadTiled}
               </button>
             </>
           )}
@@ -221,22 +282,22 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
               {progress >= 30 && (
                 <div className="processing-stats">
                   <div className="stat-badge">
-                    <span className="stat-icon">📍</span>
+                    <span className="stat-icon"><AppIcon name="target" size={16} /></span>
                     <span>{parameters.pins} pin</span>
                   </div>
                   <div className="stat-badge">
-                    <span className="stat-icon">📏</span>
+                    <span className="stat-icon"><AppIcon name="fileText" size={16} /></span>
                     <span>{parameters.maxLines} linee</span>
                   </div>
                   <div className="stat-badge">
-                    <span className="stat-icon">⚡</span>
+                    <span className="stat-icon"><AppIcon name="zap" size={16} /></span>
                     <span>{parameters.useAdvancedAlgorithm ? 'Advanced' : 'Basic'}</span>
                   </div>
                 </div>
               )}
 
               <p className="loading-tip">
-                💡 Tip: {parameters.useWebWorker
+                <AppIcon name="lightbulb" size={16} /> {parameters.useWebWorker
                   ? en.loading.tips.webWorker
                   : en.loading.tips.blocking}
               </p>
@@ -253,6 +314,56 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
 
       {result && (
         <>
+          <div className="tile-export-panel">
+            <div className="tile-export-header">
+              <h4>{en.canvas.tiling.title}</h4>
+              <p>{en.canvas.tiling.description}</p>
+            </div>
+
+            <div className="tile-export-controls">
+              <label className="tile-field">
+                <span>{en.canvas.tiling.physicalSize}</span>
+                <input
+                  type="number"
+                  min="10"
+                  max="300"
+                  step="1"
+                  value={physicalSizeCm}
+                  onChange={(event) => setPhysicalSizeCm(event.target.value)}
+                />
+              </label>
+
+              <label className="tile-field">
+                <span>{en.canvas.tiling.orientation}</span>
+                <select
+                  value={pageOrientation}
+                  onChange={(event) => setPageOrientation(event.target.value)}
+                >
+                  <option value="portrait">A4 Portrait</option>
+                  <option value="landscape">A4 Landscape</option>
+                </select>
+              </label>
+
+              <label className="tile-field">
+                <span>{en.canvas.tiling.margin}</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={pageMarginMm}
+                  onChange={(event) => setPageMarginMm(event.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="tile-export-summary">
+              <span>{en.canvas.tiling.pages.replace('{pages}', tiling.totalPages)}</span>
+              <span>{en.canvas.tiling.grid.replace('{cols}', tiling.columns).replace('{rows}', tiling.rows)}</span>
+              <span>{en.canvas.tiling.tileSize.replace('{width}', tiling.tileWidthMm.toFixed(1)).replace('{height}', tiling.tileHeightMm.toFixed(1))}</span>
+            </div>
+          </div>
+
           <div className="stats">
             <div className="stat-item">
               <span className="stat-label">{en.canvas.stats.linesGenerated}</span>
@@ -273,6 +384,7 @@ function StringArtCanvas({ image, result, parameters, isProcessing, progress = 0
             <StepByStepControls
               currentStep={currentStep}
               totalSteps={result.steps.length}
+              totalLines={result.stats.totalLines}
               onStepChange={setCurrentStep}
               isPlaying={isPlaying}
               onPlayPause={() => setIsPlaying(!isPlaying)}

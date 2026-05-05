@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'lucide-react'],
+  },
   build: {
     // Optimize bundle size with esbuild (faster than terser)
     minify: 'esbuild',
@@ -34,10 +40,14 @@ export default defineConfig({
     drop: ['console', 'debugger'],
     legalComments: 'none',
   },
-  // Performance optimizations
   server: {
-    headers: {
-      'Cache-Control': 'public, max-age=31536000',
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      host: '127.0.0.1',
+      port: 5173,
+      protocol: 'ws',
     },
   },
 })

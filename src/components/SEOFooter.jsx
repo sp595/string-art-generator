@@ -1,56 +1,48 @@
 import React from 'react'
+import { en } from '../i18n/en'
 import './SEOFooter.css'
 
 function SEOFooter() {
+  const { footer } = en
+
   return (
     <footer className="seo-footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>About String Art Generator</h3>
-          <p>
-            Free online string art generator tool that transforms any image into beautiful thread art patterns.
-            Create professional DIY nail and thread art for wall decor, personalized gifts, and creative projects.
-            100% free with no registration required.
-          </p>
+          <h3>{footer.aboutTitle}</h3>
+          <p>{footer.aboutText}</p>
         </div>
 
         <div className="footer-section">
-          <h3>Quick Links</h3>
+          <h3>{footer.linksTitle}</h3>
           <nav aria-label="Footer navigation">
             <ul>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#how-it-works">How It Works</a></li>
-              <li><a href="#faq">FAQ</a></li>
-              <li><a href="/">Generator Tool</a></li>
+              <li><a href="#features">{footer.links.features}</a></li>
+              <li><a href="#how-it-works">{footer.links.howItWorks}</a></li>
+              <li><a href="#faq">{footer.links.faq}</a></li>
+              <li><a href="/">{footer.links.generator}</a></li>
             </ul>
           </nav>
         </div>
 
         <div className="footer-section">
-          <h3>Use Cases</h3>
+          <h3>{footer.useCasesTitle}</h3>
           <ul className="use-cases">
-            <li>Portrait String Art</li>
-            <li>Geometric Patterns</li>
-            <li>Logo String Art</li>
-            <li>Wedding Decorations</li>
-            <li>Wall Art & Home Decor</li>
-            <li>Personalized Gifts</li>
+            {footer.useCases.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
         </div>
 
         <div className="footer-section">
-          <h3>Keywords</h3>
-          <p className="footer-keywords">
-            String art generator, thread art maker, nail art pattern, DIY string art, geometric art generator,
-            wall art creator, line art generator, circular string art, mandala generator, portrait string art,
-            free online tool, no registration
-          </p>
+          <h3>{footer.keywordsTitle}</h3>
+          <p className="footer-keywords">{footer.keywords}</p>
         </div>
       </div>
 
       <div className="footer-bottom">
         <p>
-          © {new Date().getFullYear()} String Art Generator — Powered by{" "}
+          © {new Date().getFullYear()} {footer.copyrightPrefix}{" "}
           <a
             href="https://cmdc.it"
             target="_blank"
@@ -60,9 +52,7 @@ function SEOFooter() {
             cmdc
           </a>
         </p>
-        <p className="footer-tech">
-          Built with • Advanced Edge Detection • Greedy Optimization Algorithm
-        </p>
+        <p className="footer-tech">{footer.tech}</p>
       </div>
     </footer>
   )

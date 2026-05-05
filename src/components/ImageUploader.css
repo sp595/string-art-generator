@@ -1,136 +1,113 @@
 .image-uploader {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(248, 241, 230, 0.9));
+  box-shadow: var(--shadow-soft);
 }
 
 .upload-area {
-  border: 3px dashed #ddd;
-  border-radius: 8px;
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  border: 1.5px dashed rgba(29, 109, 114, 0.34);
+  border-radius: 22px;
+  padding: 30px 22px;
+  text-align: center;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.8), transparent 60%),
+    linear-gradient(180deg, rgba(238, 248, 248, 0.84), rgba(251, 246, 238, 0.95));
 }
 
-@media (max-width: 768px) {
-  .image-uploader {
-    padding: 16px;
-  }
-
-  .upload-area {
-    padding: 20px;
-    border-width: 2px;
-  }
-}
-
-@media (max-width: 480px) {
-  .image-uploader {
-    padding: 14px;
-  }
-
-  .upload-area {
-    padding: 16px;
-  }
+.upload-area::before {
+  content: '';
+  position: absolute;
+  inset: auto -30% -55% auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(187, 90, 52, 0.12), transparent 68%);
 }
 
 .upload-area:hover {
-  border-color: #667eea;
-  background: rgba(102, 126, 234, 0.05);
+  transform: translateY(-1px);
+  border-color: rgba(187, 90, 52, 0.52);
+  box-shadow: 0 18px 30px rgba(69, 46, 22, 0.08);
 }
 
 .upload-placeholder {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: #666;
+  color: var(--ink-soft);
 }
 
 .upload-icon {
-  width: 48px;
-  height: 48px;
-  color: #667eea;
+  width: 54px;
+  height: 54px;
+  color: var(--brand);
 }
 
 .upload-placeholder p {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #333;
-  margin: 0;
+  font-size: 1.14rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .upload-placeholder span {
   font-size: 0.9rem;
-  color: #999;
-}
-
-@media (max-width: 768px) {
-  .upload-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .upload-placeholder p {
-    font-size: 1rem;
-  }
-
-  .upload-placeholder span {
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .upload-placeholder {
-    gap: 8px;
-  }
-
-  .upload-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .upload-placeholder p {
-    font-size: 0.95rem;
-  }
-
-  .upload-placeholder span {
-    font-size: 0.8rem;
-  }
+  color: var(--ink-faint);
 }
 
 .preview-container {
   position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
 }
 
 .preview-image {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
   display: block;
-  margin: 0 auto;
+  border-radius: 18px;
 }
 
 .change-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(180deg, rgba(33, 28, 21, 0.1), rgba(33, 28, 21, 0.7));
+  color: #fff8ef;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 8px;
-  font-weight: 500;
+  transition: opacity 0.2s ease;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .preview-container:hover .change-overlay {
   opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .image-uploader {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .upload-area {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  .upload-icon {
+    width: 46px;
+    height: 46px;
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, lazy, Suspense } from 'react'
+import React, { useEffect, useState, lazy, Suspense } from 'react'
 import ImageUploader from './components/ImageUploader'
 import ImageCropper from './components/ImageCropper'
 import ParameterControls from './components/ParameterControls'
@@ -8,6 +8,7 @@ import Toast from './components/Toast'
 import LandingHero from './components/LandingHero'
 import { generateStringArt } from './utils/stringArtAlgorithm'
 import { generateAdvancedStringArt } from './utils/advancedStringArt'
+import { buildPreviewSteps } from './utils/stringArtCore'
 import { useStringArtWorker } from './hooks/useStringArtWorker'
 import { en } from './i18n/en'
 import './App.css'
@@ -24,17 +25,17 @@ function App() {
   const [image, setImage] = useState(null)
   const [showCropper, setShowCropper] = useState(false)
   const [parameters, setParameters] = useState({
-    pins: 300,
-    minDistance: 30,
-    maxLines: 3000,
-    lineWeight: 15,
-    imageSize: 600,
-    useAdvancedAlgorithm: false,
+    pins: 280,
+    minDistance: 24,
+    maxLines: 4200,
+    lineWeight: 12,
+    imageSize: 700,
+    useAdvancedAlgorithm: true,
     useEdgeDetection: true,
-    useLookahead: false,  // Disabled by default for performance
+    useLookahead: true,
     useAntialiasing: false,
-    useWebWorker: true,  // Enabled by default for better UX
-    edgeWeight: 0.7,
+    useWebWorker: true,
+    edgeWeight: 0.65,
     lookaheadDepth: 1
   })
   const [isProcessing, setIsProcessing] = useState(false)
@@ -43,6 +44,12 @@ function App() {
   const [toast, setToast] = useState(null)
 
   const { generateWithWorker, terminateWorker } = useStringArtWorker()
+
+  useEffect(() => {
+    return () => {
+      terminateWorker()
+    }
+  }, [terminateWorker])
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -77,15 +84,13 @@ function App() {
     try {
       let stringArtResult
 
-      if (parameters.useWebWorker && !parameters.useAdvancedAlgorithm) {
-        // Use Web Worker for basic algorithm (better performance)
+      if (parameters.useWebWorker) {
         stringArtResult = await generateWithWorker(
           image,
           parameters,
           (progressValue) => setProgress(progressValue)
         )
       } else {
-        // Use main thread for advanced algorithm or when worker is disabled
         const generateFunction = parameters.useAdvancedAlgorithm
           ? generateAdvancedStringArt
           : generateStringArt
@@ -113,7 +118,7 @@ function App() {
     if (!result) return
 
     // Export without steps array (too large) and with all UI parameters
-    const { steps, parameters: resultParams, ...restData } = result
+    const { steps, ...restData } = result
     const exportData = {
       ...restData,
       parameters: parameters // Use all UI parameters instead of algorithm-specific ones
@@ -135,20 +140,7 @@ function App() {
     try {
       // Generate steps if they don't exist (for backward compatibility)
       if (!jsonData.steps && jsonData.lineSequence) {
-        const steps = []
-        let currentPin = 0
-
-        for (let i = 0; i < jsonData.lineSequence.length; i++) {
-          const nextPin = jsonData.lineSequence[i]
-          steps.push({
-            lineCount: i + 1,
-            lineSequence: jsonData.lineSequence.slice(0, i + 1),
-            fromPin: currentPin,
-            toPin: nextPin
-          })
-          currentPin = nextPin
-        }
-
+        const steps = buildPreviewSteps(jsonData.lineSequence)
         jsonData.steps = steps
         if (jsonData.stats) {
           jsonData.stats.totalSteps = steps.length
@@ -220,7 +212,7 @@ function App() {
             currentImage={image}
           />
 
-          <JSONImporter onJSONImport={handleJSONImport} />
+          <JSONImporter onJSONImport={handleJSONImport} onNotify={showToast} />
 
           <ParameterControls
             parameters={parameters}
