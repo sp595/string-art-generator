@@ -6,7 +6,7 @@ import { useRef, useCallback } from 'react'
 export function useStringArtWorker() {
   const workerRef = useRef(null)
 
-  const generateWithWorker = useCallback((image, parameters, onProgress) => {
+  const generateWithWorker = useCallback((image, parameters, onProgress, onLiveUpdate) => {
     return new Promise((resolve, reject) => {
       // Create canvas to get image data
       const canvas = document.createElement('canvas')
@@ -33,6 +33,8 @@ export function useStringArtWorker() {
 
         if (type === 'progress') {
           onProgress?.(progress)
+        } else if (type === 'live') {
+          onLiveUpdate?.(e.data)
         } else if (type === 'complete') {
           worker.terminate()
           workerRef.current = null

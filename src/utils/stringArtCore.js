@@ -1,3 +1,5 @@
+import { gaussianBlurGrayscale, unsharpMask, percentileStretch } from './imagePreprocessing'
+
 const DEFAULT_PREVIEW_STEPS = 160
 
 function clamp(value, min, max) {
@@ -136,40 +138,37 @@ function imageToGrayscale(imageData, imageSize) {
   return pixels
 }
 
-function normalizeInsideCircle(grayscalePixels, imageSize) {
-  const pixels = new Float32Array(imageSize * imageSize)
+function buildCircleMask(imageSize) {
   const mask = new Uint8Array(imageSize * imageSize)
   const center = imageSize / 2
   const radius = imageSize / 2 - 2
   const radiusSquared = radius * radius
-  let min = 255
-  let max = 0
 
   for (let y = 0; y < imageSize; y++) {
     for (let x = 0; x < imageSize; x++) {
-      const idx = y * imageSize + x
       const dx = x - center
       const dy = y - center
-      const inside = (dx * dx) + (dy * dy) <= radiusSquared
-
-      if (!inside) {
-        pixels[idx] = 255
-        continue
+      if ((dx * dx) + (dy * dy) <= radiusSquared) {
+        mask[y * imageSize + x] = 1
       }
-
-      mask[idx] = 1
-      const value = grayscalePixels[idx]
-      if (value < min) min = value
-      if (value > max) max = value
     }
   }
 
-  const range = Math.max(1, max - min)
+  return mask
+}
+
+function normalizeInsideCircle(grayscalePixels, imageSize) {
+  const mask = buildCircleMask(imageSize)
+
+  // Preprocessing: blur → percentile stretch → unsharp mask
+  const blurred = gaussianBlurGrayscale(grayscalePixels, imageSize)
+  const stretched = percentileStretch(blurred, mask)
+  const sharpened = unsharpMask(stretched, imageSize, 0.55)
+
+  const pixels = new Float32Array(imageSize * imageSize)
 
   for (let i = 0; i < pixels.length; i++) {
-    if (!mask[i]) continue
-    const stretched = ((grayscalePixels[i] - min) / range) * 255
-    pixels[i] = clamp(stretched, 0, 255)
+    pixels[i] = mask[i] ? sharpened[i] : 255
   }
 
   return { pixels, mask }
@@ -371,12 +370,25 @@ function evaluateCandidate({
   return score + (bestFutureScore * 0.12)
 }
 
-export function buildPreviewSteps(lineSequence, maxPreviewSteps = DEFAULT_PREVIEW_STEPS) {
+export function buildManualInstructions(lineSequence, startPin = 0) {
+  const instructions = []
+  let currentPin = startPin
+
+  for (let i = 0; i < lineSequence.length; i++) {
+    const nextPin = lineSequence[i]
+    instructions.push({ lineIndex: i, fromPin: currentPin, toPin: nextPin })
+    currentPin = nextPin
+  }
+
+  return instructions
+}
+
+export function buildPreviewSteps(lineSequence, maxPreviewSteps = DEFAULT_PREVIEW_STEPS, startPin = 0) {
   if (!lineSequence.length) return []
 
   const steps = []
   const stride = Math.max(1, Math.ceil(lineSequence.length / maxPreviewSteps))
-  let currentPin = 0
+  let currentPin = startPin
 
   for (let i = 0; i < lineSequence.length; i++) {
     const nextPin = lineSequence[i]
@@ -399,8 +411,8 @@ export function buildPreviewSteps(lineSequence, maxPreviewSteps = DEFAULT_PREVIE
 }
 
 function buildRenderingHints(parameters, totalLines) {
-  const lineOpacity = clamp(0.06 + ((parameters.lineWeight || 12) / 260), 0.08, 0.18)
-  const lineWidth = clamp((parameters.imageSize / 900) * 0.9, 0.5, 1)
+  const lineOpacity = clamp(0.09 + ((parameters.lineWeight || 12) / 220), 0.12, 0.22)
+  const lineWidth = clamp((parameters.imageSize / 900) * 1.0, 0.65, 1.1)
   const pinRadius = clamp(parameters.imageSize / 360, 1.2, 2)
 
   return {
@@ -427,7 +439,7 @@ function prepareParameters(parameters, defaults = {}) {
   }
 }
 
-export async function generateStringArtFromImageData(imageData, rawParameters, onProgress, defaults = {}) {
+export async function generateStringArtFromImageData(imageData, rawParameters, onProgress, defaults = {}, onLiveUpdate = null) {
   const parameters = prepareParameters(rawParameters, defaults)
   const {
     pins,
@@ -472,7 +484,8 @@ export async function generateStringArtFromImageData(imageData, rawParameters, o
   const usedLines = new Set()
   const pinUsage = new Uint16Array(pins)
   const recentPins = new Array(Math.min(24, Math.max(8, Math.floor(pins / 14)))).fill(-1)
-  let currentPin = findStartingPin(sourcePixels, mask, pins)
+  const startPin = findStartingPin(sourcePixels, mask, pins)
+  let currentPin = startPin
 
   onProgress?.(35)
 
@@ -522,13 +535,22 @@ export async function generateStringArtFromImageData(imageData, rawParameters, o
 
     if (i % 50 === 0) {
       onProgress?.(35 + Math.floor((i / Math.max(1, maxLines)) * 60))
+      if (i % 200 === 0 && i > 0 && onLiveUpdate) {
+        onLiveUpdate({
+          lineSequence: lineSequence.slice(),
+          pinCoords,
+          startPin,
+          rendering: buildRenderingHints(parameters, i)
+        })
+      }
       await new Promise((resolve) => setTimeout(resolve, 0))
     }
   }
 
   onProgress?.(97)
 
-  const steps = buildPreviewSteps(lineSequence, maxPreviewSteps)
+  const steps = buildPreviewSteps(lineSequence, maxPreviewSteps, startPin)
+  const manualInstructions = buildManualInstructions(lineSequence, startPin)
   const rendering = buildRenderingHints(parameters, lineSequence.length)
 
   onProgress?.(100)
@@ -536,7 +558,9 @@ export async function generateStringArtFromImageData(imageData, rawParameters, o
   return {
     lineSequence,
     pinCoords,
+    startPin,
     steps,
+    manualInstructions,
     parameters,
     rendering,
     stats: {

@@ -23,6 +23,13 @@
     radial-gradient(circle at bottom left, rgba(29, 109, 114, 0.08), transparent 28%);
 }
 
+.app-header-auth {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  z-index: 2;
+}
+
 .app-header {
   position: relative;
   display: grid;

@@ -360,6 +360,71 @@
   font-size: 1.05rem;
 }
 
+/* Compact overlay for live drawing mode */
+.processing-overlay-compact {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 10px 16px;
+  background: linear-gradient(to top, rgba(33, 28, 21, 0.78) 0%, transparent 100%);
+  border-radius: 0 0 24px 24px;
+}
+
+.compact-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 245, 232, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.compact-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand), #e07b51);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.compact-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.compact-status {
+  font-size: 0.75rem;
+  color: rgba(255, 245, 232, 0.85);
+  font-weight: 500;
+}
+
+.compact-pct {
+  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: rgba(255, 245, 232, 0.9);
+  font-weight: 600;
+}
+
+/* Thread length stat */
+.stat-item-wide {
+  flex: 2 1 280px;
+}
+
+.stat-thread {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stat-thread-sub {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
 .empty-state {
   position: relative;
   z-index: 1;

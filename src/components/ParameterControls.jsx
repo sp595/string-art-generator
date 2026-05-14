@@ -57,6 +57,14 @@ function ParameterControls({ parameters, onParameterChange, disabled }) {
       max: 800,
       step: 50,
       description: en.parameters.imageSize.description
+    },
+    {
+      name: 'canvasRadiusCm',
+      label: 'Raggio tela (cm)',
+      min: 5,
+      max: 150,
+      step: 5,
+      description: 'Raggio fisico della tela in centimetri. Usato per calcolare la lunghezza totale del filo necessario.'
     }
   ]
 

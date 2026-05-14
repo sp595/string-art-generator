@@ -16,6 +16,9 @@ self.onmessage = async function(event) {
         useAntialiasing: false,
         edgeWeight: 0.65,
         lookaheadDepth: 1
+      },
+      (liveData) => {
+        self.postMessage({ type: 'live', ...liveData })
       }
     )
 

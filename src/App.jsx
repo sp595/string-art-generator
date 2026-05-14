@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react'
+import React, { useEffect, useState, lazy, Suspense, useCallback } from 'react'
 import ImageUploader from './components/ImageUploader'
 import ImageCropper from './components/ImageCropper'
 import ParameterControls from './components/ParameterControls'
@@ -6,14 +6,16 @@ import StringArtCanvas from './components/StringArtCanvas'
 import JSONImporter from './components/JSONImporter'
 import Toast from './components/Toast'
 import LandingHero from './components/LandingHero'
+import AuthButton from './components/AuthButton'
 import { generateStringArt } from './utils/stringArtAlgorithm'
 import { generateAdvancedStringArt } from './utils/advancedStringArt'
-import { buildPreviewSteps } from './utils/stringArtCore'
+import { buildPreviewSteps, buildManualInstructions } from './utils/stringArtCore'
 import { useStringArtWorker } from './hooks/useStringArtWorker'
+import { useAuth } from './hooks/useAuth'
+import { useCloudSave } from './hooks/useCloudSave'
 import { en } from './i18n/en'
 import './App.css'
 
-// Lazy load non-critical components for better FCP
 const FAQ = lazy(() => import('./components/FAQ'))
 const AdBanner = lazy(() => import('./components/AdBanner'))
 const HowItWorks = lazy(() => import('./components/HowItWorks'))
@@ -30,6 +32,7 @@ function App() {
     maxLines: 4200,
     lineWeight: 12,
     imageSize: 700,
+    canvasRadiusCm: 30,
     useAdvancedAlgorithm: true,
     useEdgeDetection: true,
     useLookahead: true,
@@ -40,15 +43,20 @@ function App() {
   })
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState(null)
+  const [liveResult, setLiveResult] = useState(null)
   const [progress, setProgress] = useState(0)
   const [toast, setToast] = useState(null)
 
   const { generateWithWorker, terminateWorker } = useStringArtWorker()
+  const { user, isConfigured } = useAuth()
+  const { saves, saving, saveProgress, updateProgress, deleteSave, refreshSaves } = useCloudSave(user)
 
   useEffect(() => {
-    return () => {
-      terminateWorker()
-    }
+    refreshSaves()
+  }, [refreshSaves])
+
+  useEffect(() => {
+    return () => terminateWorker()
   }, [terminateWorker])
 
   const showToast = (message, type = 'success') => {
@@ -67,7 +75,6 @@ function App() {
   const handleCropComplete = (croppedImage) => {
     setImage(croppedImage)
     setShowCropper(false)
-    // Keep originalImage so user can re-edit crop
     showToast(en.toast.imageCropped, 'success')
   }
 
@@ -85,30 +92,22 @@ function App() {
       let stringArtResult
 
       if (parameters.useWebWorker) {
-        stringArtResult = await generateWithWorker(
-          image,
-          parameters,
-          (progressValue) => setProgress(progressValue)
-        )
+        stringArtResult = await generateWithWorker(image, parameters, setProgress, setLiveResult)
       } else {
         const generateFunction = parameters.useAdvancedAlgorithm
           ? generateAdvancedStringArt
           : generateStringArt
 
-        stringArtResult = await generateFunction(
-          image,
-          parameters,
-          (progressValue) => setProgress(progressValue)
-        )
+        stringArtResult = await generateFunction(image, parameters, setProgress)
       }
 
+      setLiveResult(null)
       setResult(stringArtResult)
-      const message = en.toast.generated.replace('{lines}', stringArtResult.stats.totalLines)
-      showToast(message, 'success')
+      showToast(en.toast.generated.replace('{lines}', stringArtResult.stats.totalLines), 'success')
     } catch (error) {
-      console.error('Error generating string art:', error)
       showToast(en.toast.error, 'error')
     } finally {
+      setLiveResult(null)
       setIsProcessing(false)
       setProgress(0)
     }
@@ -117,85 +116,85 @@ function App() {
   const handleExport = () => {
     if (!result) return
 
-    // Export without steps array (too large) and with all UI parameters
-    const { steps, ...restData } = result
-    const exportData = {
-      ...restData,
-      parameters: parameters // Use all UI parameters instead of algorithm-specific ones
-    }
+    const { steps, manualInstructions, ...restData } = result
+    const exportData = { ...restData, parameters }
     const dataStr = JSON.stringify(exportData, null, 2)
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
-    const exportFileDefaultName = `string-art-${Date.now()}.json`
-
-    const linkElement = document.createElement('a')
-    linkElement.setAttribute('href', dataUri)
-    linkElement.setAttribute('download', exportFileDefaultName)
-    linkElement.click()
+    const link = document.createElement('a')
+    link.setAttribute('href', dataUri)
+    link.setAttribute('download', `string-art-${Date.now()}.json`)
+    link.click()
 
     showToast(en.toast.jsonExported, 'success')
   }
 
   const handleJSONImport = (jsonData) => {
     try {
-      // Generate steps if they don't exist (for backward compatibility)
+      const startPin = jsonData.startPin ?? 0
+
       if (!jsonData.steps && jsonData.lineSequence) {
-        const steps = buildPreviewSteps(jsonData.lineSequence)
-        jsonData.steps = steps
+        jsonData.steps = buildPreviewSteps(jsonData.lineSequence, 160, startPin)
         if (jsonData.stats) {
-          jsonData.stats.totalSteps = steps.length
+          jsonData.stats.totalSteps = jsonData.steps.length
         }
       }
 
-      // Set the result from imported JSON
-      setResult(jsonData)
-
-      // Update parameters if they exist
-      if (jsonData.parameters) {
-        setParameters(prev => ({
-          ...prev,
-          ...jsonData.parameters
-        }))
+      if (!jsonData.manualInstructions && jsonData.lineSequence) {
+        jsonData.manualInstructions = buildManualInstructions(jsonData.lineSequence, startPin)
       }
 
-      // Clear current image and cropper
+      setResult(jsonData)
+
+      if (jsonData.parameters) {
+        setParameters(prev => ({ ...prev, ...jsonData.parameters }))
+      }
+
       setImage(null)
       setOriginalImage(null)
       setShowCropper(false)
 
-      showToast('String art imported successfully!', 'success')
+      showToast('String art importata con successo!', 'success')
     } catch (error) {
-      showToast('Error importing JSON: ' + error.message, 'error')
+      showToast('Errore import JSON: ' + error.message, 'error')
     }
   }
 
-  const scrollToApp = () => {
-    const appContent = document.querySelector('.app-content')
-    if (appContent) {
-      appContent.scrollIntoView({ behavior: 'smooth' })
+  const handleLoadProgress = useCallback((restored, savedLine) => {
+    // Rebuild steps if missing
+    if (!restored.steps || restored.steps.length === 0) {
+      const startPin = restored.startPin ?? 0
+      restored.steps = buildPreviewSteps(restored.lineSequence, 160, startPin)
+      if (restored.stats) restored.stats.previewSteps = restored.steps.length
     }
+
+    setResult(restored)
+
+    if (restored.parameters) {
+      setParameters(prev => ({ ...prev, ...restored.parameters }))
+    }
+  }, [])
+
+  const handleSaveProgress = useCallback(async (r, currentLine, name) => {
+    await saveProgress(r, currentLine, name)
+    showToast('Progresso salvato!', 'success')
+  }, [saveProgress])
+
+  const scrollToApp = () => {
+    document.querySelector('.app-content')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
     <>
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
       <LandingHero onGetStarted={scrollToApp} />
 
       <Suspense fallback={<div style={{ minHeight: '200px' }} />}>
-        {/* Benefits Section - SEO Content */}
         <Benefits />
-
-        {/* How It Works Section - SEO Content */}
         <HowItWorks />
-
-        {/* Top Ad Banner - After Hero Section */}
         <AdBanner slot="1418183247" format="horizontal" />
       </Suspense>
 
@@ -203,87 +202,84 @@ function App() {
         <header className="app-header">
           <h2>{en.header.title}</h2>
           <p>{en.header.subtitle}</p>
+          <div className="app-header-auth">
+            <AuthButton />
+          </div>
         </header>
 
-      <div className="app-content">
-        <div className="left-panel">
-          <ImageUploader
-            onImageUpload={handleImageUpload}
-            currentImage={image}
-          />
+        <div className="app-content">
+          <div className="left-panel">
+            <ImageUploader onImageUpload={handleImageUpload} currentImage={image} />
+            <JSONImporter onJSONImport={handleJSONImport} onNotify={showToast} />
+            <ParameterControls
+              parameters={parameters}
+              onParameterChange={handleParameterChange}
+              disabled={isProcessing}
+            />
 
-          <JSONImporter onJSONImport={handleJSONImport} onNotify={showToast} />
-
-          <ParameterControls
-            parameters={parameters}
-            onParameterChange={handleParameterChange}
-            disabled={isProcessing}
-          />
-
-          <div className="actions">
-            <button
-              className={`btn-primary ${isProcessing ? 'processing' : ''}`}
-              onClick={handleGenerate}
-              disabled={!image || isProcessing}
-            >
-              {isProcessing ? (
-                <span className="btn-content">
-                  <span className="btn-spinner"></span>
-                  {en.actions.generating}... {progress}%
-                </span>
-              ) : (
-                en.actions.generate
-              )}
-            </button>
-
-            {result && (
+            <div className="actions">
               <button
-                className="btn-secondary"
-                onClick={handleExport}
+                className={`btn-primary ${isProcessing ? 'processing' : ''}`}
+                onClick={handleGenerate}
+                disabled={!image || isProcessing}
               >
-                {en.actions.export}
+                {isProcessing ? (
+                  <span className="btn-content">
+                    <span className="btn-spinner"></span>
+                    {en.actions.generating}... {progress}%
+                  </span>
+                ) : (
+                  en.actions.generate
+                )}
               </button>
+
+              {result && (
+                <button className="btn-secondary" onClick={handleExport}>
+                  {en.actions.export}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="right-panel">
+            {showCropper ? (
+              <div className="cropper-panel">
+                <ImageCropper
+                  image={originalImage}
+                  targetSize={parameters.imageSize}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+            ) : (
+              <StringArtCanvas
+                image={image}
+                result={result}
+                liveResult={liveResult}
+                parameters={parameters}
+                isProcessing={isProcessing}
+                progress={progress}
+                onNotify={showToast}
+                onEditCrop={originalImage ? () => setShowCropper(true) : null}
+                user={user}
+                saves={saves}
+                saving={saving}
+                onSaveProgress={handleSaveProgress}
+                onLoadProgress={handleLoadProgress}
+                onDeleteSave={deleteSave}
+                isConfigured={isConfigured}
+              />
             )}
           </div>
         </div>
 
-        <div className="right-panel">
-          {showCropper ? (
-            <div className="cropper-panel">
-              <ImageCropper
-                image={originalImage}
-                targetSize={parameters.imageSize}
-                onCropComplete={handleCropComplete}
-              />
-            </div>
-          ) : (
-            <StringArtCanvas
-              image={image}
-              result={result}
-              parameters={parameters}
-              isProcessing={isProcessing}
-              progress={progress}
-              onNotify={showToast}
-              onEditCrop={originalImage ? () => setShowCropper(true) : null}
-            />
-          )}
-        </div>
+        <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
+          <AdBanner slot="5844513418" format="horizontal" />
+          <FAQ />
+          <AdBanner slot="9552534575" format="square" />
+        </Suspense>
       </div>
 
       <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
-        {/* Bottom Ad Banner - Before FAQ */}
-        <AdBanner slot="5844513418" format="horizontal" />
-
-        <FAQ />
-
-
-        {/* Ad Banner - Below Preview */}
-        <AdBanner slot="9552534575" format="square" />
-      </Suspense>
-    </div>
-
-      <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
-        {/* SEO Footer */}
         <SEOFooter />
       </Suspense>
     </>

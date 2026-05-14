@@ -6,7 +6,10 @@
       "Bash(npm run build:*)",
       "Bash(magick:*)",
       "WebFetch(domain:suite.seotesteronline.com)",
-      "WebFetch(domain:stringartgenerator.cmdc.it)"
+      "WebFetch(domain:stringartgenerator.cmdc.it)",
+      "Bash(npm install *)",
+      "Read(//tmp/**)",
+      "Bash(kill %1)"
     ],
     "deny": [],
     "ask": []
