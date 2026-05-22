@@ -3,11 +3,21 @@ import { createPortal } from 'react-dom'
 import AppIcon from './AppIcon'
 import './StepByStepControls.css'
 
+// Find the preview step whose lineCount is closest to targetLine
+function lineToStep(steps, targetLine) {
+  if (!steps?.length) return 0
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].lineCount >= targetLine) return i
+  }
+  return steps.length - 1
+}
+
 function StepByStepControls({
   // Preview mode
   currentStep,
   totalSteps,
   totalLines,
+  steps,
   onStepChange,
   isPlaying,
   onPlayPause,
@@ -67,17 +77,26 @@ function StepByStepControls({
 
   const handleSlider = (e) => {
     const val = parseInt(e.target.value)
-    if (isManual) onManualLineChange(val)
-    else onStepChange(val)
+    if (isManual) {
+      onManualLineChange(val)
+    } else {
+      // slider value = line index → convert to nearest preview step
+      onStepChange(lineToStep(steps, val + 1))
+    }
   }
 
   const handleJump = (e) => {
     e.preventDefault()
     const val = parseInt(jumpValue)
     if (isNaN(val)) return
-    const clamped = Math.max(0, Math.min(isManual ? maxManualLine : totalSteps - 1, val - 1))
-    if (isManual) onManualLineChange(clamped)
-    else onStepChange(clamped)
+    if (isManual) {
+      const clamped = Math.max(0, Math.min(maxManualLine, val - 1))
+      onManualLineChange(clamped)
+    } else {
+      // val is a line number → find nearest step
+      const clamped = Math.max(1, Math.min(totalLines, val))
+      onStepChange(lineToStep(steps, clamped))
+    }
     setJumpValue('')
   }
 
@@ -116,8 +135,9 @@ function StepByStepControls({
     return () => window.removeEventListener('keydown', onKey)
   }, [manualLine, currentStep, isManual, isPlaying])
 
-  const sliderMax = isManual ? maxManualLine : totalSteps - 1
-  const sliderVal = isManual ? manualLine : currentStep
+  // Both modes use line numbers (0..totalLines-1) for slider and display
+  const sliderMax = totalLines - 1
+  const sliderVal = isManual ? manualLine : (stepData?.lineCount ?? 1) - 1
   const progress = sliderMax > 0 ? (sliderVal / sliderMax) * 100 : 0
 
   return (
@@ -167,11 +187,9 @@ function StepByStepControls({
         <div className="step-info">
           <div className="step-header">
             <span className="step-label">Anteprima</span>
-            <span className="step-counter">{currentStep + 1} / {totalSteps}</span>
+            <span className="step-counter">{stepData.lineCount} / {totalLines}</span>
           </div>
-          <div className="step-progress">
-            Linee visualizzate: {stepData.lineCount} / {totalLines}
-          </div>
+
           <div className="pin-info">
             <span className="pin-label">Pin {stepData.fromPin}</span>
             <span className="pin-arrow"><AppIcon name="moveRight" size={16} /></span>
@@ -219,7 +237,7 @@ function StepByStepControls({
             ref={jumpInputRef}
             className="jump-input"
             type="number"
-            placeholder={isManual ? `Vai a linea (1-${totalLines})` : `Vai a step (1-${totalSteps})`}
+            placeholder={`Vai a linea (1–${totalLines})`}
             value={jumpValue}
             onChange={e => setJumpValue(e.target.value)}
             min="1"

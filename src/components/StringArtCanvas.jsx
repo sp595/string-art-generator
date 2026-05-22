@@ -444,6 +444,7 @@ function StringArtCanvas({
             currentStep={currentStep}
             totalSteps={result.steps?.length ?? 0}
             totalLines={result.stats.totalLines}
+            steps={result.steps}
             onStepChange={setCurrentStep}
             isPlaying={isPlaying}
             onPlayPause={() => setIsPlaying(!isPlaying)}
