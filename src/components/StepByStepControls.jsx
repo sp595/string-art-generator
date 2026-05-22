@@ -35,6 +35,10 @@ function StepByStepControls({
   onLoadProgress,
   saving,
   saves,
+  onNavNext,
+  onNavPrev,
+  onNavFirst,
+  onNavLast,
   onDeleteSave,
   user,
   isConfigured
@@ -46,34 +50,7 @@ function StepByStepControls({
   const jumpInputRef = useRef(null)
 
   const isManual = mode === 'manual'
-  const currentLine = isManual ? manualLine : (stepData?.lineCount ?? 0)
   const maxManualLine = totalLines - 1
-
-  const handlePrev = () => {
-    if (isManual) {
-      if (manualLine > 0) onManualLineChange(manualLine - 1)
-    } else {
-      if (currentStep > 0) onStepChange(currentStep - 1)
-    }
-  }
-
-  const handleNext = () => {
-    if (isManual) {
-      if (manualLine < maxManualLine) onManualLineChange(manualLine + 1)
-    } else {
-      if (currentStep < totalSteps - 1) onStepChange(currentStep + 1)
-    }
-  }
-
-  const handleFirst = () => {
-    if (isManual) onManualLineChange(0)
-    else onStepChange(0)
-  }
-
-  const handleLast = () => {
-    if (isManual) onManualLineChange(maxManualLine)
-    else onStepChange(totalSteps - 1)
-  }
 
   const handleSlider = (e) => {
     const val = parseInt(e.target.value)
@@ -107,33 +84,10 @@ function StepByStepControls({
     setShowSaveModal(false)
   }
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const onKey = (e) => {
-      // Don't intercept if user is typing in an input
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
-
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault()
-        handleNext()
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault()
-        handlePrev()
-      } else if (e.key === ' ') {
-        e.preventDefault()
-        onPlayPause()
-      } else if (e.key === 'Home') {
-        e.preventDefault()
-        handleFirst()
-      } else if (e.key === 'End') {
-        e.preventDefault()
-        handleLast()
-      }
-    }
-
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [manualLine, currentStep, isManual, isPlaying])
+  // Auto-fill jump input with current line on focus
+  const handleJumpFocus = () => {
+    if (!jumpValue) setJumpValue(String(sliderVal + 1))
+  }
 
   // Both modes use line numbers (0..totalLines-1) for slider and display
   const sliderMax = totalLines - 1
@@ -200,19 +154,19 @@ function StepByStepControls({
 
       {/* Navigation buttons */}
       <div className="step-buttons">
-        <button className="step-btn" onClick={handleFirst} disabled={sliderVal === 0} title="Inizio (Home)">
+        <button className="step-btn" onClick={onNavFirst} disabled={sliderVal === 0} title="Inizio (Home)">
           <AppIcon name="chevronsLeft" size={18} />
         </button>
-        <button className="step-btn" onClick={handlePrev} disabled={sliderVal === 0} title="Indietro (←)">
+        <button className="step-btn" onClick={onNavPrev} disabled={sliderVal === 0} title="Indietro (←)">
           <AppIcon name="chevronLeft" size={18} />
         </button>
         <button className="step-btn step-btn-play" onClick={onPlayPause} title="Play/Pausa (Spazio)">
           {isPlaying ? <AppIcon name="pause" size={18} /> : <AppIcon name="play" size={18} />}
         </button>
-        <button className="step-btn" onClick={handleNext} disabled={sliderVal === sliderMax} title="Avanti (→)">
+        <button className="step-btn" onClick={onNavNext} disabled={sliderVal === sliderMax} title="Avanti (→)">
           <AppIcon name="chevronRight" size={18} />
         </button>
-        <button className="step-btn" onClick={handleLast} disabled={sliderVal === sliderMax} title="Fine (End)">
+        <button className="step-btn" onClick={onNavLast} disabled={sliderVal === sliderMax} title="Fine (End)">
           <AppIcon name="chevronsRight" size={18} />
         </button>
       </div>
@@ -239,9 +193,10 @@ function StepByStepControls({
             type="number"
             placeholder={`Vai a linea (1–${totalLines})`}
             value={jumpValue}
+            onFocus={handleJumpFocus}
             onChange={e => setJumpValue(e.target.value)}
             min="1"
-            max={isManual ? totalLines : totalSteps}
+            max={totalLines}
           />
           <button type="submit" className="jump-btn">Vai</button>
         </form>
@@ -284,8 +239,16 @@ function StepByStepControls({
 
       {/* Keyboard hint */}
       <div className="keyboard-hint">
-        ← → naviga &nbsp;·&nbsp; Spazio play/pausa &nbsp;·&nbsp; Home/End inizio/fine
+        ← → naviga linea per linea &nbsp;·&nbsp; Spazio play/pausa &nbsp;·&nbsp; Home/End inizio/fine
       </div>
+
+      {/* Autosave hint (manual mode only) */}
+      {isManual && (
+        <div className="autosave-hint">
+          <AppIcon name="save" size={12} />
+          La posizione viene salvata automaticamente ad ogni ← →. Se perdi il filo, ricarica la pagina per riprendere da dove eri.
+        </div>
+      )}
 
     </div>
 

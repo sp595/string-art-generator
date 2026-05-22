@@ -62,14 +62,66 @@ function StringArtCanvas({
     return en.loading.states.complete
   }
 
-  // Reset when result changes
+  const AS_KEY = (totalLines) => `sa-pos-${totalLines}`
+
+  // Reset when result changes + auto-restore autosaved position
   useEffect(() => {
     if (result?.steps) {
       setCurrentStep(result.steps.length - 1)
-      setManualLine(0)
-      setMode('preview')
+      const saved = parseInt(localStorage.getItem(AS_KEY(result.stats.totalLines)) || '0')
+      if (saved > 0 && saved < result.stats.totalLines) {
+        setManualLine(saved)
+        setMode('manual')
+      } else {
+        setManualLine(0)
+        setMode('preview')
+      }
     }
   }, [result])
+
+  // Keyboard navigation — lives in parent so setters use functional form (no stale closure)
+  useEffect(() => {
+    if (!result) return
+    const totalLines = result.stats.totalLines
+    const totalSteps = result.steps?.length ?? 0
+
+    const onKey = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+
+      // ← → always go 1 line at a time (switch to manual if needed)
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        setMode('manual')
+        setManualLine(prev => {
+          const next = Math.min(totalLines - 1, prev + 1)
+          localStorage.setItem(AS_KEY(totalLines), String(next))
+          return next
+        })
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        setMode('manual')
+        setManualLine(prev => {
+          const next = Math.max(0, prev - 1)
+          localStorage.setItem(AS_KEY(totalLines), String(next))
+          return next
+        })
+      } else if (e.key === ' ') {
+        e.preventDefault()
+        setIsPlaying(prev => !prev)
+      } else if (e.key === 'Home') {
+        e.preventDefault()
+        setMode('manual')
+        setManualLine(0)
+      } else if (e.key === 'End') {
+        e.preventDefault()
+        setMode('manual')
+        setManualLine(totalLines - 1)
+      }
+    }
+
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [result, mode])
 
   // Auto-play
   useEffect(() => {
@@ -277,6 +329,41 @@ function StringArtCanvas({
     if (onLoadProgress) onLoadProgress(restored, save.currentLine)
   }, [onNotify])
 
+  // Button navigation with autosave (functional updates → no stale closure)
+  // Buttons always navigate line by line (same as keyboard)
+  const handleNavNext = useCallback(() => {
+    if (!result) return
+    const totalLines = result.stats.totalLines
+    setMode('manual')
+    setManualLine(prev => {
+      const next = Math.min(totalLines - 1, prev + 1)
+      localStorage.setItem(AS_KEY(totalLines), String(next))
+      return next
+    })
+  }, [result])
+
+  const handleNavPrev = useCallback(() => {
+    if (!result) return
+    const totalLines = result.stats.totalLines
+    setMode('manual')
+    setManualLine(prev => {
+      const next = Math.max(0, prev - 1)
+      localStorage.setItem(AS_KEY(totalLines), String(next))
+      return next
+    })
+  }, [result])
+
+  const handleNavFirst = useCallback(() => {
+    setMode('manual')
+    setManualLine(0)
+  }, [])
+
+  const handleNavLast = useCallback(() => {
+    if (!result) return
+    setMode('manual')
+    setManualLine(result.stats.totalLines - 1)
+  }, [result])
+
   const handleSaveProgress = useCallback((name) => {
     if (!result || !onSaveProgress) return
     const line = mode === 'manual' ? manualLine : 0
@@ -453,6 +540,10 @@ function StringArtCanvas({
             onModeChange={setMode}
             manualLine={manualLine}
             onManualLineChange={setManualLine}
+            onNavNext={handleNavNext}
+            onNavPrev={handleNavPrev}
+            onNavFirst={handleNavFirst}
+            onNavLast={handleNavLast}
             manualInstruction={manualInstruction}
             playSpeed={playSpeed}
             onPlaySpeedChange={setPlaySpeed}

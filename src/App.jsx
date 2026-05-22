@@ -51,6 +51,39 @@ function App() {
   const { user, isConfigured } = useAuth()
   const { saves, saving, saveProgress, updateProgress, deleteSave, refreshSaves } = useCloudSave(user)
 
+  // ── Persist result to localStorage ──────────────────────────────────────
+  const RESULT_KEY = 'sa-last-result'
+
+  // Restore on first load
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(RESULT_KEY)
+      if (!raw) return
+      const data = JSON.parse(raw)
+      if (!data?.lineSequence?.length) return
+      const startPin = data.startPin ?? 0
+      data.steps = buildPreviewSteps(data.lineSequence, 160, startPin)
+      data.manualInstructions = buildManualInstructions(data.lineSequence, startPin)
+      if (!data.stats) data.stats = { totalLines: data.lineSequence.length }
+      setResult(data)
+      if (data.parameters) setParameters(prev => ({ ...prev, ...data.parameters }))
+    } catch {
+      localStorage.removeItem(RESULT_KEY)
+    }
+  }, [])
+
+  // Save whenever result changes
+  useEffect(() => {
+    if (!result) return
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const { steps, manualInstructions, ...toSave } = result
+      localStorage.setItem(RESULT_KEY, JSON.stringify(toSave))
+    } catch {
+      // Storage full — ignore silently
+    }
+  }, [result])
+
   useEffect(() => {
     refreshSaves()
   }, [refreshSaves])
