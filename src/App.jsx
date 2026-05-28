@@ -32,7 +32,7 @@ function App() {
     maxLines: 4200,
     lineWeight: 12,
     imageSize: 700,
-    canvasRadiusCm: 30,
+    canvasRadiusCm: 24,
     useAdvancedAlgorithm: true,
     useEdgeDetection: true,
     useLookahead: true,
@@ -250,28 +250,36 @@ function App() {
               disabled={isProcessing}
             />
 
-            <div className="actions">
-              <button
-                className={`btn-primary ${isProcessing ? 'processing' : ''}`}
-                onClick={handleGenerate}
-                disabled={!image || isProcessing}
-              >
-                {isProcessing ? (
-                  <span className="btn-content">
-                    <span className="btn-spinner"></span>
-                    {en.actions.generating}... {progress}%
-                  </span>
-                ) : (
-                  en.actions.generate
-                )}
-              </button>
+            {!result && saves.length > 0 && (
+              <div className="saved-sessions-panel">
+                <div className="saved-sessions-title">Sessioni salvate</div>
+                {saves.map(save => (
+                  <div key={save.id} className="saved-session-item">
+                    <div className="saved-session-info">
+                      <span className="saved-session-name">{save.name}</span>
+                      <span className="saved-session-meta">
+                        Linea {(save.currentLine ?? 0) + 1} / {save.lineSequence?.length ?? '?'}
+                        {' · '}{new Date(save.savedAt).toLocaleDateString('it-IT')}
+                      </span>
+                    </div>
+                    <button
+                      className="saved-session-load"
+                      onClick={() => handleLoadProgress(save)}
+                    >
+                      Riprendi
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-              {result && (
+            {result && (
+              <div className="actions">
                 <button className="btn-secondary" onClick={handleExport}>
                   {en.actions.export}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="right-panel">
@@ -284,6 +292,7 @@ function App() {
                 />
               </div>
             ) : (
+              <>
               <StringArtCanvas
                 image={image}
                 result={result}
@@ -301,6 +310,23 @@ function App() {
                 onDeleteSave={deleteSave}
                 isConfigured={isConfigured}
               />
+              <div className="actions actions-right">
+                <button
+                  className={`btn-primary ${isProcessing ? 'processing' : ''}`}
+                  onClick={handleGenerate}
+                  disabled={!image || isProcessing}
+                >
+                  {isProcessing ? (
+                    <span className="btn-content">
+                      <span className="btn-spinner"></span>
+                      {en.actions.generating}... {progress}%
+                    </span>
+                  ) : (
+                    en.actions.generate
+                  )}
+                </button>
+              </div>
+              </>
             )}
           </div>
         </div>

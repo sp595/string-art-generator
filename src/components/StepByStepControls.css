@@ -422,6 +422,40 @@
   opacity: 0.7;
 }
 
+/* ── Wrapping tips ── */
+.wrapping-tips {
+  background: rgba(187, 90, 52, 0.06);
+  border: 1px solid rgba(187, 90, 52, 0.16);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.wrapping-tips-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--brand-deep);
+  margin-bottom: 7px;
+}
+
+.wrapping-tips-list {
+  margin: 0;
+  padding-left: 14px;
+}
+
+.wrapping-tips-list li {
+  margin-bottom: 4px;
+}
+
+.wrapping-tips-list li:last-child {
+  margin-bottom: 0;
+}
+
 /* ── Modals (portaled to body) ── */
 .modal-overlay {
   position: fixed;

@@ -132,16 +132,137 @@
   gap: 14px;
 }
 
-.tile-export-header h4 {
-  margin-bottom: 4px;
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.collapsible-header h4 {
+  margin: 0;
   color: var(--ink);
   font-size: 1.05rem;
 }
 
-.tile-export-header p {
+.collapsible-header:hover h4 {
+  color: var(--teal-deep);
+}
+
+.tile-export-desc {
   color: var(--ink-soft);
   font-size: 0.92rem;
+  margin: 0;
 }
+
+.tile-export-desc a {
+  color: var(--teal-deep);
+  text-decoration: underline;
+}
+
+/* Spotify panel */
+.spotify-panel {
+  padding: 16px 18px;
+  border: 1px solid rgba(29, 109, 114, 0.16);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(242, 250, 249, 0.84), rgba(255, 250, 243, 0.96));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.spotify-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--teal-deep);
+  cursor: pointer;
+  border-radius: 14px;
+  transition: background 0.15s;
+}
+
+.spotify-open-btn:hover {
+  background: rgba(29, 109, 114, 0.07);
+}
+
+.spotify-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--teal-deep);
+}
+
+.spotify-header-icon { font-size: 1rem; }
+
+.spotify-iframe {
+  border-radius: 14px;
+  display: block;
+}
+
+.spotify-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.spotify-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.spotify-input:focus {
+  outline: none;
+  border-color: var(--teal-deep);
+}
+
+.spotify-confirm-btn {
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: none;
+  background: var(--teal-deep);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.18s;
+}
+
+.spotify-confirm-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.spotify-confirm-btn:hover:not(:disabled) { opacity: 0.82; }
+
+.spotify-change-btn {
+  align-self: flex-start;
+  padding: 5px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.spotify-change-btn:hover { background: rgba(0,0,0,0.04); }
 
 .tile-export-controls {
   display: grid;

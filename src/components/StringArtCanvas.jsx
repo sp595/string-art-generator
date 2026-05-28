@@ -4,23 +4,40 @@ import StepByStepControls from './StepByStepControls'
 import { en } from '../i18n/en'
 import { exportPinStencilToPdf, getA4TilingConfig } from '../utils/tiledPdfExport'
 import { buildManualInstructions } from '../utils/stringArtCore'
+import { downloadJigScad } from '../utils/scadJigExport'
 import './StringArtCanvas.css'
 
 function calculateThreadLengthM(lineSequence, pinCoords, startPin, canvasRadiusCm, imageSize) {
   if (!lineSequence?.length || !pinCoords?.length) return 0
+  const total = pinCoords.length
+  // Pin radius matches stringArtCore.js: imageSize/2 - 1
+  const rPx = imageSize / 2 - 1
   let totalPx = 0
   let cur = startPin ?? 0
   for (const next of lineSequence) {
-    const p1 = pinCoords[cur]
-    const p2 = pinCoords[next]
-    const dx = p2.x - p1.x
-    const dy = p2.y - p1.y
-    totalPx += Math.sqrt(dx * dx + dy * dy)
+    // Chord between two pins: 2R·sin(Δθ/2), using exact angular positions
+    const steps = Math.abs(next - cur)
+    const dAngle = (2 * Math.PI * Math.min(steps, total - steps)) / total
+    totalPx += 2 * rPx * Math.sin(dAngle / 2)
     cur = next
   }
-  // imageSize/2 pixels = canvasRadiusCm cm
   const cmPerPx = canvasRadiusCm / (imageSize / 2)
   return (totalPx * cmPerPx) / 100  // metres
+}
+
+function toSpotifyEmbedUrl(input) {
+  if (!input?.trim()) return null
+  try {
+    if (input.startsWith('spotify:')) {
+      const parts = input.split(':')
+      return `https://open.spotify.com/embed/${parts[1]}/${parts[2]}`
+    }
+    const url = new URL(input.trim())
+    if (url.hostname === 'open.spotify.com') {
+      return `https://open.spotify.com/embed${url.pathname.replace(/\/$/, '')}`
+    }
+  } catch {}
+  return null
 }
 
 function StringArtCanvas({
@@ -52,6 +69,13 @@ function StringArtCanvas({
   const [physicalSizeCm, setPhysicalSizeCm] = useState(50)
   const [pageOrientation, setPageOrientation] = useState('portrait')
   const [pageMarginMm, setPageMarginMm] = useState(5)
+  const [spotifyUrl, setSpotifyUrl] = useState(() => localStorage.getItem('sa-spotify-url') || '')
+  const [spotifyStep, setSpotifyStep] = useState(() => localStorage.getItem('sa-spotify-url') ? 'player' : 'closed')
+  const [stencilOpen, setStencilOpen] = useState(true)
+  const [jigOpen, setJigOpen] = useState(false)
+  const [jigHoleCount, setJigHoleCount] = useState(6)
+  const [jigNailDiameter, setJigNailDiameter] = useState(1.8)
+  const [jigHeight, setJigHeight] = useState(18)
 
   const getStatusMessage = (p) => {
     if (p < 10) return en.loading.states.loadingImage
@@ -364,6 +388,16 @@ function StringArtCanvas({
     setManualLine(result.stats.totalLines - 1)
   }, [result])
 
+  const handleDownloadJig = useCallback(() => {
+    if (!result) return
+    downloadJigScad(
+      { holeCount: jigHoleCount, nailDiameterMm: jigNailDiameter, jigHeightMm: jigHeight },
+      result.parameters.pins,
+      parameters.canvasRadiusCm ?? 30
+    )
+    onNotify?.('File SCAD scaricato — aprilo in OpenSCAD per esportare in STL', 'success')
+  }, [result, parameters, jigHoleCount, jigNailDiameter, jigHeight, onNotify])
+
   const handleSaveProgress = useCallback((name) => {
     if (!result || !onSaveProgress) return
     const line = mode === 'manual' ? manualLine : 0
@@ -465,36 +499,89 @@ function StringArtCanvas({
       {result && (
         <>
           <div className="tile-export-panel">
-            <div className="tile-export-header">
+            <button
+              className="collapsible-header"
+              onClick={() => setStencilOpen(o => !o)}
+              aria-expanded={stencilOpen}
+            >
               <h4>{en.canvas.tiling.title}</h4>
-              <p>{en.canvas.tiling.description}</p>
-            </div>
-            <div className="tile-export-controls">
-              <label className="tile-field">
-                <span>{en.canvas.tiling.physicalSize}</span>
-                <input type="number" min="10" max="300" step="1"
-                  value={physicalSizeCm}
-                  onChange={e => setPhysicalSizeCm(e.target.value)} />
-              </label>
-              <label className="tile-field">
-                <span>{en.canvas.tiling.orientation}</span>
-                <select value={pageOrientation} onChange={e => setPageOrientation(e.target.value)}>
-                  <option value="portrait">A4 Portrait</option>
-                  <option value="landscape">A4 Landscape</option>
-                </select>
-              </label>
-              <label className="tile-field">
-                <span>{en.canvas.tiling.margin}</span>
-                <input type="number" min="0" max="20" step="1"
-                  value={pageMarginMm}
-                  onChange={e => setPageMarginMm(e.target.value)} />
-              </label>
-            </div>
-            <div className="tile-export-summary">
-              <span>{en.canvas.tiling.pages.replace('{pages}', tiling.totalPages)}</span>
-              <span>{en.canvas.tiling.grid.replace('{cols}', tiling.columns).replace('{rows}', tiling.rows)}</span>
-              <span>{en.canvas.tiling.tileSize.replace('{width}', tiling.tileWidthMm.toFixed(1)).replace('{height}', tiling.tileHeightMm.toFixed(1))}</span>
-            </div>
+              <AppIcon name={stencilOpen ? 'chevronUp' : 'chevronDown'} size={16} />
+            </button>
+            {stencilOpen && (
+              <>
+                <p className="tile-export-desc">{en.canvas.tiling.description}</p>
+                <div className="tile-export-controls">
+                  <label className="tile-field">
+                    <span>{en.canvas.tiling.physicalSize}</span>
+                    <input type="number" min="10" max="300" step="1"
+                      value={physicalSizeCm}
+                      onChange={e => setPhysicalSizeCm(e.target.value)} />
+                  </label>
+                  <label className="tile-field">
+                    <span>{en.canvas.tiling.orientation}</span>
+                    <select value={pageOrientation} onChange={e => setPageOrientation(e.target.value)}>
+                      <option value="portrait">A4 Portrait</option>
+                      <option value="landscape">A4 Landscape</option>
+                    </select>
+                  </label>
+                  <label className="tile-field">
+                    <span>{en.canvas.tiling.margin}</span>
+                    <input type="number" min="0" max="20" step="1"
+                      value={pageMarginMm}
+                      onChange={e => setPageMarginMm(e.target.value)} />
+                  </label>
+                </div>
+                <div className="tile-export-summary">
+                  <span>{en.canvas.tiling.pages.replace('{pages}', tiling.totalPages)}</span>
+                  <span>{en.canvas.tiling.grid.replace('{cols}', tiling.columns).replace('{rows}', tiling.rows)}</span>
+                  <span>{en.canvas.tiling.tileSize.replace('{width}', tiling.tileWidthMm.toFixed(1)).replace('{height}', tiling.tileHeightMm.toFixed(1))}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="tile-export-panel">
+            <button
+              className="collapsible-header"
+              onClick={() => setJigOpen(o => !o)}
+              aria-expanded={jigOpen}
+            >
+              <h4>Dima 3D per chiodi</h4>
+              <AppIcon name={jigOpen ? 'chevronUp' : 'chevronDown'} size={16} />
+            </button>
+            {jigOpen && (
+              <>
+                <p className="tile-export-desc">
+                  Genera un file <strong>.scad</strong> da aprire in{' '}
+                  <a href="https://openscad.org" target="_blank" rel="noopener noreferrer">OpenSCAD</a>{' '}
+                  per esportare la dima in STL e stamparla in 3D.
+                  La dima guida l'inserimento di chiodi da 13 mm su MDF ≥ 4 mm.
+                </p>
+                <div className="tile-export-controls">
+                  <label className="tile-field">
+                    <span>Fori per sessione (5–8)</span>
+                    <input type="number" min="5" max="8" step="1"
+                      value={jigHoleCount}
+                      onChange={e => setJigHoleCount(Number(e.target.value))} />
+                  </label>
+                  <label className="tile-field">
+                    <span>Diametro gambo chiodo (mm)</span>
+                    <input type="number" min="1" max="4" step="0.1"
+                      value={jigNailDiameter}
+                      onChange={e => setJigNailDiameter(Number(e.target.value))} />
+                  </label>
+                  <label className="tile-field">
+                    <span>Altezza dima (mm)</span>
+                    <input type="number" min="10" max="40" step="1"
+                      value={jigHeight}
+                      onChange={e => setJigHeight(Number(e.target.value))} />
+                  </label>
+                </div>
+                <button className="download-btn tiled-btn" onClick={handleDownloadJig}>
+                  Scarica dima (.scad)
+                </button>
+              </>
+            )}
           </div>
 
           <div className="stats">
@@ -555,6 +642,73 @@ function StringArtCanvas({
             user={user}
             isConfigured={isConfigured}
           />
+
+          <div className="spotify-panel">
+            {spotifyStep === 'closed' && (
+              <button className="spotify-open-btn" onClick={() => setSpotifyStep('input')}>
+                <span className="spotify-header-icon">♪</span>
+                Metti su della musica
+              </button>
+            )}
+
+            {spotifyStep === 'input' && (
+              <>
+                <div className="spotify-header">
+                  <span className="spotify-header-icon">♪</span>
+                  <span>Incolla il link Spotify</span>
+                </div>
+                <div className="spotify-input-row">
+                  <input
+                    className="spotify-input"
+                    type="url"
+                    placeholder="Playlist, album o brano…"
+                    value={spotifyUrl}
+                    autoFocus
+                    onChange={e => setSpotifyUrl(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && toSpotifyEmbedUrl(spotifyUrl)) {
+                        localStorage.setItem('sa-spotify-url', spotifyUrl)
+                        setSpotifyStep('player')
+                      }
+                      if (e.key === 'Escape') setSpotifyStep('closed')
+                    }}
+                  />
+                  <button
+                    className="spotify-confirm-btn"
+                    disabled={!toSpotifyEmbedUrl(spotifyUrl)}
+                    onClick={() => {
+                      localStorage.setItem('sa-spotify-url', spotifyUrl)
+                      setSpotifyStep('player')
+                    }}
+                  >
+                    OK
+                  </button>
+                </div>
+              </>
+            )}
+
+            {spotifyStep === 'player' && toSpotifyEmbedUrl(spotifyUrl) && (
+              <>
+                <iframe
+                  src={toSpotifyEmbedUrl(spotifyUrl)}
+                  width="100%"
+                  height="152"
+                  frameBorder="0"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  title="Spotify Player"
+                  className="spotify-iframe"
+                />
+                <button className="spotify-change-btn" onClick={() => {
+                  localStorage.removeItem('sa-spotify-url')
+                  setSpotifyUrl('')
+                  setSpotifyStep('closed')
+                }}>
+                  Chiudi
+                </button>
+              </>
+            )}
+          </div>
         </>
       )}
     </div>

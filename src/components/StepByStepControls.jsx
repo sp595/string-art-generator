@@ -250,6 +250,20 @@ function StepByStepControls({
         </div>
       )}
 
+      {/* Practical wrapping tips (manual mode only) */}
+      {isManual && (
+        <div className="wrapping-tips">
+          <div className="wrapping-tips-title">
+            <AppIcon name="lightbulb" size={13} /> Consigli pratici
+          </div>
+          <ul className="wrapping-tips-list">
+            <li>Avvolgi <strong>sempre nella stessa direzione</strong> (es. sempre oraria) per tutta la string art.</li>
+            <li>Attorno a <strong>ogni chiodo</strong> gira il filo <strong>almeno 2 volte</strong> prima di passare al successivo.</li>
+            <li>Mantieni la tensione <strong>costante</strong>: né troppo teso né troppo lasco.</li>
+          </ul>
+        </div>
+      )}
+
     </div>
 
     {/* Save modal — portaled to body to escape overflow:hidden parents */}
