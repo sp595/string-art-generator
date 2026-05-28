@@ -4,7 +4,7 @@ import StepByStepControls from './StepByStepControls'
 import { en } from '../i18n/en'
 import { exportPinStencilToPdf, getA4TilingConfig } from '../utils/tiledPdfExport'
 import { buildManualInstructions } from '../utils/stringArtCore'
-import { downloadJigScad } from '../utils/scadJigExport'
+import { downloadJigScad, downloadJigStl } from '../utils/scadJigExport'
 import './StringArtCanvas.css'
 
 function calculateThreadLengthM(lineSequence, pinCoords, startPin, canvasRadiusCm, imageSize) {
@@ -75,7 +75,7 @@ function StringArtCanvas({
   const [jigOpen, setJigOpen] = useState(false)
   const [jigHoleCount, setJigHoleCount] = useState(6)
   const [jigNailDiameter, setJigNailDiameter] = useState(1.8)
-  const [jigHeight, setJigHeight] = useState(18)
+  const [jigHeight, setJigHeight] = useState(6)
 
   const getStatusMessage = (p) => {
     if (p < 10) return en.loading.states.loadingImage
@@ -390,12 +390,22 @@ function StringArtCanvas({
 
   const handleDownloadJig = useCallback(() => {
     if (!result) return
+    downloadJigStl(
+      { holeCount: jigHoleCount, nailDiameterMm: jigNailDiameter, jigHeightMm: jigHeight },
+      result.parameters.pins,
+      parameters.canvasRadiusCm ?? 30
+    )
+    onNotify?.('File STL della dima curva scaricato', 'success')
+  }, [result, parameters, jigHoleCount, jigNailDiameter, jigHeight, onNotify])
+
+  const handleDownloadJigScad = useCallback(() => {
+    if (!result) return
     downloadJigScad(
       { holeCount: jigHoleCount, nailDiameterMm: jigNailDiameter, jigHeightMm: jigHeight },
       result.parameters.pins,
       parameters.canvasRadiusCm ?? 30
     )
-    onNotify?.('File SCAD scaricato — aprilo in OpenSCAD per esportare in STL', 'success')
+    onNotify?.('File SCAD modificabile scaricato', 'success')
   }, [result, parameters, jigHoleCount, jigNailDiameter, jigHeight, onNotify])
 
   const handleSaveProgress = useCallback((name) => {
@@ -552,15 +562,13 @@ function StringArtCanvas({
             {jigOpen && (
               <>
                 <p className="tile-export-desc">
-                  Genera un file <strong>.scad</strong> da aprire in{' '}
-                  <a href="https://openscad.org" target="_blank" rel="noopener noreferrer">OpenSCAD</a>{' '}
-                  per esportare la dima in STL e stamparla in 3D.
-                  La dima guida l'inserimento di chiodi da 13 mm su MDF ≥ 4 mm.
+                  Genera una dima curva in <strong>STL</strong> con due agganci alle estremità.
+                  I fori seguono il raggio del canvas e la distanza reale tra pin.
                 </p>
                 <div className="tile-export-controls">
                   <label className="tile-field">
-                    <span>Fori per sessione (5–8)</span>
-                    <input type="number" min="5" max="8" step="1"
+                    <span>Fori nuovi per sessione (3–12)</span>
+                    <input type="number" min="3" max="12" step="1"
                       value={jigHoleCount}
                       onChange={e => setJigHoleCount(Number(e.target.value))} />
                   </label>
@@ -571,15 +579,20 @@ function StringArtCanvas({
                       onChange={e => setJigNailDiameter(Number(e.target.value))} />
                   </label>
                   <label className="tile-field">
-                    <span>Altezza dima (mm)</span>
-                    <input type="number" min="10" max="40" step="1"
+                    <span>Spessore dima (max 6 mm)</span>
+                    <input type="number" min="2" max="6" step="0.5"
                       value={jigHeight}
                       onChange={e => setJigHeight(Number(e.target.value))} />
                   </label>
                 </div>
-                <button className="download-btn tiled-btn" onClick={handleDownloadJig}>
-                  Scarica dima (.scad)
-                </button>
+                <div className="jig-actions">
+                  <button className="download-btn tiled-btn" onClick={handleDownloadJig}>
+                    Scarica dima (.stl)
+                  </button>
+                  <button className="toggle-btn" onClick={handleDownloadJigScad}>
+                    Scarica sorgente (.scad)
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -656,6 +669,14 @@ function StringArtCanvas({
                 <div className="spotify-header">
                   <span className="spotify-header-icon">♪</span>
                   <span>Incolla il link Spotify</span>
+                  <a
+                    className="spotify-external-link"
+                    href="https://open.spotify.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Apri Spotify
+                  </a>
                 </div>
                 <div className="spotify-input-row">
                   <input

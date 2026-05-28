@@ -80,6 +80,36 @@
   z-index: 1;
 }
 
+.app-after-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 32px;
+  margin-top: 34px;
+}
+
+.app-after-content .faq-section {
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-faq-sponsored-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.app-sponsored-space {
+  margin: 0;
+}
+
+.app-sponsored-space-side {
+  justify-self: center;
+  position: sticky;
+  top: 18px;
+}
+
 .left-panel {
   display: flex;
   flex-direction: column;
@@ -245,6 +275,21 @@
   .right-panel {
     padding: 16px;
     border-radius: 22px;
+  }
+
+  .app-after-content {
+    gap: 22px;
+    margin-top: 24px;
+  }
+
+  .app-faq-sponsored-row {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sponsored-space-side {
+    position: static;
+    width: 100%;
+    max-width: 100%;
   }
 }
 

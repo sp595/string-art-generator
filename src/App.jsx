@@ -331,11 +331,15 @@ function App() {
           </div>
         </div>
 
-        <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
-          <AdBanner slot="5844513418" format="horizontal" />
-          <FAQ />
-          <AdBanner slot="9552534575" format="square" />
-        </Suspense>
+        <div className="app-after-content">
+          <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
+            <AdBanner slot="5844513418" format="horizontal" className="app-sponsored-space" />
+            <div className="app-faq-sponsored-row">
+              <FAQ />
+              <AdBanner slot="9552534575" format="square" className="app-sponsored-space app-sponsored-space-side" />
+            </div>
+          </Suspense>
+        </div>
       </div>
 
       <Suspense fallback={<div style={{ minHeight: '100px' }} />}>
