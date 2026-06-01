@@ -411,8 +411,8 @@ export function buildPreviewSteps(lineSequence, maxPreviewSteps = DEFAULT_PREVIE
 }
 
 function buildRenderingHints(parameters, totalLines) {
-  const lineOpacity = clamp(0.09 + ((parameters.lineWeight || 12) / 220), 0.12, 0.22)
-  const lineWidth = clamp((parameters.imageSize / 900) * 1.0, 0.65, 1.1)
+  const lineOpacity = clamp(0.14 + ((parameters.lineWeight || 12) / 150), 0.2, 0.34)
+  const lineWidth = clamp((parameters.imageSize / 900) * 1.08, 0.75, 1.25)
   const pinRadius = clamp(parameters.imageSize / 360, 1.2, 2)
 
   return {

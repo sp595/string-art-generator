@@ -243,8 +243,8 @@ function StringArtCanvas({
     ctx.fillRect(0, 0, imageSize, imageSize)
 
     const rendering = result.rendering || {}
-    const lineOpacity = rendering.lineOpacity || 0.15
-    const lineWidth = rendering.lineWidth || 0.8
+    const lineOpacity = Math.max(rendering.lineOpacity || 0.22, 0.2)
+    const lineWidth = Math.max(rendering.lineWidth || 0.85, 0.75)
     const pinRadius = rendering.pinRadius || 1.5
 
     ctx.strokeStyle = `rgba(0, 0, 0, ${lineOpacity})`
@@ -508,6 +508,35 @@ function StringArtCanvas({
 
       {result && (
         <>
+          <StepByStepControls
+            currentStep={currentStep}
+            totalSteps={result.steps?.length ?? 0}
+            totalLines={result.stats.totalLines}
+            steps={result.steps}
+            onStepChange={setCurrentStep}
+            isPlaying={isPlaying}
+            onPlayPause={() => setIsPlaying(!isPlaying)}
+            stepData={result.steps?.[currentStep]}
+            mode={mode}
+            onModeChange={setMode}
+            manualLine={manualLine}
+            onManualLineChange={setManualLine}
+            onNavNext={handleNavNext}
+            onNavPrev={handleNavPrev}
+            onNavFirst={handleNavFirst}
+            onNavLast={handleNavLast}
+            manualInstruction={manualInstruction}
+            playSpeed={playSpeed}
+            onPlaySpeedChange={setPlaySpeed}
+            onSaveProgress={handleSaveProgress}
+            onLoadProgress={handleLoadProgress}
+            saving={saving}
+            saves={saves || []}
+            onDeleteSave={onDeleteSave}
+            user={user}
+            isConfigured={isConfigured}
+          />
+
           <div className="tile-export-panel">
             <button
               className="collapsible-header"
@@ -626,35 +655,6 @@ function StringArtCanvas({
               </span>
             </div>
           </div>
-
-          <StepByStepControls
-            currentStep={currentStep}
-            totalSteps={result.steps?.length ?? 0}
-            totalLines={result.stats.totalLines}
-            steps={result.steps}
-            onStepChange={setCurrentStep}
-            isPlaying={isPlaying}
-            onPlayPause={() => setIsPlaying(!isPlaying)}
-            stepData={result.steps?.[currentStep]}
-            mode={mode}
-            onModeChange={setMode}
-            manualLine={manualLine}
-            onManualLineChange={setManualLine}
-            onNavNext={handleNavNext}
-            onNavPrev={handleNavPrev}
-            onNavFirst={handleNavFirst}
-            onNavLast={handleNavLast}
-            manualInstruction={manualInstruction}
-            playSpeed={playSpeed}
-            onPlaySpeedChange={setPlaySpeed}
-            onSaveProgress={handleSaveProgress}
-            onLoadProgress={handleLoadProgress}
-            saving={saving}
-            saves={saves || []}
-            onDeleteSave={onDeleteSave}
-            user={user}
-            isConfigured={isConfigured}
-          />
 
           <div className="spotify-panel">
             {spotifyStep === 'closed' && (
